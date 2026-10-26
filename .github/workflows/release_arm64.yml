@@ -70,37 +70,15 @@ jobs:
           test -f "$ndk/source.properties"
           echo "ANDROID_NDK_HOME=$ndk" >> "$GITHUB_ENV"
 
-      # 仓库未配置签名密钥时，改用仓库内置的 debug 密钥签名
-      # 固定使用同一把密钥，保证每次构建的 APK 签名一致，可以直接覆盖安装升级
-      - name: Prepare release signing
+      # 签名由 Gradle 决定：仓库配置了 STORE_PASSWORD/KEY_PASSWORD 时用正式密钥，
+      # 否则自动退回仓库内置的调试密钥，保证产物始终可直接安装
+      - name: Report signing key
         run: |
           if [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_PASSWORD" ]; then
-            echo "Using repository signing secrets."
-            exit 0
+            echo "Signing with the repository release key."
+          else
+            echo "Signing with the bundled debug key (release secrets are not configured)."
           fi
-
-          debug_store=$(grep -m1 '^default_store_password=' ZalithLauncher/gradle.properties | cut -d= -f2-)
-          debug_key=$(grep -m1 '^default_key_password=' ZalithLauncher/gradle.properties | cut -d= -f2-)
-          if [ -z "$debug_store" ] || [ -z "$debug_key" ]; then
-            echo "No signing secrets and no bundled debug keystore password." >&2
-            exit 1
-          fi
-
-          rm -f ZalithLauncher/zalith_launcher.jks
-          keytool -importkeystore -noprompt \
-            -srckeystore ZalithLauncher/zalith_launcher_debug.jks \
-            -srcstorepass "$debug_store" \
-            -srcalias movtery_zalith_debug \
-            -destkeystore ZalithLauncher/zalith_launcher.jks \
-            -deststorepass "$debug_store" \
-            -destkeypass "$debug_key" \
-            -destalias movtery_zalith >/dev/null
-
-          {
-            echo "STORE_PASSWORD=$debug_store"
-            echo "KEY_PASSWORD=$debug_key"
-          } >> "$GITHUB_ENV"
-          echo "Signed with the bundled debug key (repository signing secrets are not configured)."
 
       - name: Build release APK (arm64)
         run: |

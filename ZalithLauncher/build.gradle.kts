@@ -50,10 +50,18 @@ android {
 
     signingConfigs {
         create("releaseBuild") {
-            storeFile = file("zalith_launcher.jks")
-            storePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt")
-            keyAlias = "movtery_zalith"
-            keyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt")
+            //未提供发布签名密钥时退回仓库内置的调试密钥：
+            //保证 CI 也能产出可直接安装的 release 包，且每次构建签名一致、可覆盖安装升级
+            val releaseStorePassword = getKeyFromLocal("STORE_PASSWORD", ".store_password.txt")
+            val releaseKeyPassword = getKeyFromLocal("KEY_PASSWORD", ".key_password.txt")
+            val useDebugKey = releaseStorePassword.isBlank() || releaseKeyPassword.isBlank()
+            if (useDebugKey) {
+                logger.lifecycle("BUILD: release signing secrets are not set, falling back to the bundled debug key.")
+            }
+            storeFile = file(if (useDebugKey) "zalith_launcher_debug.jks" else "zalith_launcher.jks")
+            storePassword = if (useDebugKey) defaultStorePassword else releaseStorePassword
+            keyAlias = if (useDebugKey) "movtery_zalith_debug" else "movtery_zalith"
+            keyPassword = if (useDebugKey) defaultKeyPassword else releaseKeyPassword
         }
         create("debugBuild") {
             storeFile = file("zalith_launcher_debug.jks")
