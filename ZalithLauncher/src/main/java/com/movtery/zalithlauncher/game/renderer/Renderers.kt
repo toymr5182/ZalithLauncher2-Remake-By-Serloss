@@ -18,12 +18,14 @@
 
 package com.movtery.zalithlauncher.game.renderer
 
+import com.movtery.zalithlauncher.game.renderer.renderers.ExynosZinkRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.GL4ESRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.KopperZinkRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.NGGL4ESRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.PanfrostRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.VirGLRenderer
+import com.movtery.zalithlauncher.utils.device.Exynos1580Profile
 import com.movtery.zalithlauncher.utils.logging.Logger
 
 private const val TAG = "Renderers"
@@ -47,14 +49,24 @@ object Renderers {
             currentRenderer = null
         }
 
-        addRenderers(
-            NGGL4ESRenderer,
-            GL4ESRenderer,
-            KopperZinkRenderer,
-            VirGLRenderer,
-            FreedrenoRenderer,
-            PanfrostRenderer
-        )
+        if (Exynos1580Profile.isDevice) {
+            //Xclipse 540 只能使用系统 Vulkan 驱动：
+            //VirGL 需要虚拟 GPU 宿主，Freedreno / Panfrost 分别只支持 Adreno / Mali，均无法在该设备上工作
+            addRenderers(
+                NGGL4ESRenderer,
+                GL4ESRenderer,
+                ExynosZinkRenderer
+            )
+        } else {
+            addRenderers(
+                NGGL4ESRenderer,
+                GL4ESRenderer,
+                KopperZinkRenderer,
+                VirGLRenderer,
+                FreedrenoRenderer,
+                PanfrostRenderer
+            )
+        }
     }
 
     /**

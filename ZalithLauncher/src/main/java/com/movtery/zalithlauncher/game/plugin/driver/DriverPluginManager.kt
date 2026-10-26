@@ -25,12 +25,16 @@ import com.movtery.zalithlauncher.game.plugin.ApkPlugin
 import com.movtery.zalithlauncher.game.plugin.ApkPluginManager
 import com.movtery.zalithlauncher.game.plugin.cacheAppIcon
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.utils.device.Exynos1580Profile
 
 /**
  * FCL 驱动器插件
  * [FCL DriverPlugin.kt](https://github.com/FCL-Team/FoldCraftLauncher/blob/main/FCLauncher/src/main/java/com/tungsten/fclauncher/plugins/DriverPlugin.kt)
  */
 object DriverPluginManager: ApkPluginManager() {
+    /** 内置的系统 Vulkan 驱动标识，仅在 Exynos 1580 等无法使用 Turnip 的设备上提供 */
+    private const val SYSTEM_VULKAN_DRIVER_ID = "builtin system vulkan"
+
     private val driverList: MutableList<Driver> = mutableListOf()
 
     fun getDriverList(): List<Driver> = driverList.toList()
@@ -39,20 +43,36 @@ object DriverPluginManager: ApkPluginManager() {
         driverList.find { it.id == driverId } ?: driverList[0]
 
     /**
+     * 当前设备是否只能使用系统 Vulkan 驱动
+     * Xclipse（Exynos 1580）没有可用的 Turnip 驱动，必须固定走系统驱动
+     */
+    fun requiresSystemVulkan(): Boolean = Exynos1580Profile.isDevice
+
+    /**
      * 初始化驱动器
      */
     fun initDriver(context: Context) {
         driverList.clear()
-        val applicationInfo = context.applicationInfo
         driverList.add(
-            Driver(
-                id = AllSettings.vulkanDriver.defaultValue,
-                appName = "",
-                appVersion = "",
-                name = "Turnip",
-                path = applicationInfo.nativeLibraryDir,
-                isLauncher = true
-            )
+            if (requiresSystemVulkan()) {
+                Driver(
+                    id = SYSTEM_VULKAN_DRIVER_ID,
+                    appName = "",
+                    appVersion = "",
+                    name = "System Vulkan (Xclipse 540)",
+                    path = "",
+                    isLauncher = true
+                )
+            } else {
+                Driver(
+                    id = AllSettings.vulkanDriver.defaultValue,
+                    appName = "",
+                    appVersion = "",
+                    name = "Turnip",
+                    path = context.applicationInfo.nativeLibraryDir,
+                    isLauncher = true
+                )
+            }
         )
     }
 

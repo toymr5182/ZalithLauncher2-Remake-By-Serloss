@@ -183,24 +183,29 @@ fun RendererSettingsScreen(
                         getItemSummary = {
                             DriverSummaryLayout(it)
                         },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    eventViewModel.sendDLPlugin(
-                                        githubLink = URL_GITHUB_DRIVER_PLUGINS,
-                                        cloudDrives = listOf(
-                                            EventViewModel.Event.DownloadPlugins.CloudDrive(
-                                                language = "zh",
-                                                link = URL_CLOUD_DRIVE_DRIVER_PLUGINS
+                        //Xclipse 只能使用系统 Vulkan 驱动，下载 Turnip 驱动插件没有意义
+                        trailingIcon = if (DriverPluginManager.requiresSystemVulkan()) {
+                            null
+                        } else {
+                            {
+                                IconButton(
+                                    onClick = {
+                                        eventViewModel.sendDLPlugin(
+                                            githubLink = URL_GITHUB_DRIVER_PLUGINS,
+                                            cloudDrives = listOf(
+                                                EventViewModel.Event.DownloadPlugins.CloudDrive(
+                                                    language = "zh",
+                                                    link = URL_CLOUD_DRIVE_DRIVER_PLUGINS
+                                                )
                                             )
                                         )
+                                    }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_download_2_filled),
+                                        contentDescription = stringResource(R.string.generic_download)
                                     )
                                 }
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_download_2_filled),
-                                    contentDescription = stringResource(R.string.generic_download)
-                                )
                             }
                         }
                     )
@@ -323,7 +328,10 @@ fun RendererSettingsScreen(
                         summary = stringResource(R.string.settings_renderer_max_refresh_rate_summary)
                     )
 
-                    if (checkVulkanSupport(LocalContext.current.packageManager)) {
+                    //目标设备已强制使用系统 Vulkan 驱动，该开关不再需要展示
+                    if (checkVulkanSupport(LocalContext.current.packageManager) &&
+                        !DriverPluginManager.requiresSystemVulkan()
+                    ) {
                         var adrenoGPUAlert by remember { mutableStateOf(false) }
 
                         SwitchSettingsCard(
