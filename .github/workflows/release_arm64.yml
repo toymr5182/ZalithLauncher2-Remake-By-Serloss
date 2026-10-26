@@ -70,7 +70,8 @@ jobs:
           test -f "$ndk/source.properties"
           echo "ANDROID_NDK_HOME=$ndk" >> "$GITHUB_ENV"
 
-      # 仓库未配置签名密钥时，用一次性生成的密钥签名，保证产物是可安装的 release 包
+      # 仓库未配置签名密钥时，改用仓库内置的 debug 密钥签名
+      # 固定使用同一把密钥，保证每次构建的 APK 签名一致，可以直接覆盖安装升级
       - name: Prepare release signing
         run: |
           if [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_PASSWORD" ]; then
@@ -78,20 +79,28 @@ jobs:
             exit 0
           fi
 
-          pass="Zl$(head -c 64 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)9x"
-          {
-            echo "STORE_PASSWORD=$pass"
-            echo "KEY_PASSWORD=$pass"
-          } >> "$GITHUB_ENV"
+          debug_store=$(grep -m1 '^default_store_password=' ZalithLauncher/gradle.properties | cut -d= -f2-)
+          debug_key=$(grep -m1 '^default_key_password=' ZalithLauncher/gradle.properties | cut -d= -f2-)
+          if [ -z "$debug_store" ] || [ -z "$debug_key" ]; then
+            echo "No signing secrets and no bundled debug keystore password." >&2
+            exit 1
+          fi
 
           rm -f ZalithLauncher/zalith_launcher.jks
-          keytool -genkeypair -v \
-            -keystore ZalithLauncher/zalith_launcher.jks \
-            -alias movtery_zalith \
-            -keyalg RSA -keysize 4096 -validity 10000 \
-            -storepass "$pass" -keypass "$pass" \
-            -dname "CN=Zalith Launcher CI, OU=CI, O=CI, L=CI, ST=CI, C=TH" >/dev/null
-          echo "Generated a CI signing key because STORE_PASSWORD/KEY_PASSWORD are not configured."
+          keytool -importkeystore -noprompt \
+            -srckeystore ZalithLauncher/zalith_launcher_debug.jks \
+            -srcstorepass "$debug_store" \
+            -srcalias movtery_zalith_debug \
+            -destkeystore ZalithLauncher/zalith_launcher.jks \
+            -deststorepass "$debug_store" \
+            -destkeypass "$debug_key" \
+            -destalias movtery_zalith >/dev/null
+
+          {
+            echo "STORE_PASSWORD=$debug_store"
+            echo "KEY_PASSWORD=$debug_key"
+          } >> "$GITHUB_ENV"
+          echo "Signed with the bundled debug key (repository signing secrets are not configured)."
 
       - name: Build release APK (arm64)
         run: |
