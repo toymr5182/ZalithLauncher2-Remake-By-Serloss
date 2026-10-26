@@ -55,6 +55,13 @@ class PathManager {
         lateinit var DIR_LAUNCHER_LOGS: File
         lateinit var DIR_NATIVE_LOGS: File
         lateinit var DIR_IMAGE_CACHE: File
+
+        /**
+         * Mesa / Zink 的磁盘着色器缓存
+         * 必须放在私有 files 目录：cacheDir 会被系统随时清理，一旦被清理就需要重新编译全部着色器，
+         * 表现就是开启光影后每次进入世界都严重卡顿
+         */
+        lateinit var DIR_SHADER_CACHE: File
         lateinit var DIR_CONTROL_LAYOUTS: File
         lateinit var DIR_TERRACOTTA: File
         lateinit var DIR_STYLES: File
@@ -99,6 +106,7 @@ class PathManager {
             DIR_LAUNCHER_LOGS = File(DIR_FILES_EXTERNAL, "logs")
             DIR_NATIVE_LOGS = File(DIR_LAUNCHER_LOGS, "native")
             DIR_IMAGE_CACHE = File(DIR_CACHE, "images")
+            DIR_SHADER_CACHE = File(DIR_FILES_PRIVATE, "shader_cache")
             DIR_CONTROL_LAYOUTS = File(DIR_FILES_EXTERNAL, "control_layouts")
             DIR_TERRACOTTA = File(DIR_FILES_PRIVATE, "net.burningtnt.terracotta")
             DIR_STYLES = File(DIR_FILES_PRIVATE, "special_styles")
@@ -120,7 +128,7 @@ class PathManager {
                 DIR_CACHE_GAME_DOWNLOADER, DIR_CACHE_MODPACK_DOWNLOADER, DIR_CACHE_MODPACK_EXPORTER,
                 DIR_CACHE_SAVE_EXPORTER, DIR_CACHE_MOD_UPDATER, DIR_CACHE_APP_ICON, DIR_CACHE_HOME_PAGE,
                 DIR_LAUNCHER_LOGS, DIR_NATIVE_LOGS, DIR_IMAGE_CACHE, DIR_CONTROL_LAYOUTS,
-                DIR_TERRACOTTA, DIR_STYLES
+                DIR_SHADER_CACHE, DIR_TERRACOTTA, DIR_STYLES
             ).forEach { dir ->
                 if (!dir.exists() && !dir.mkdirs()) {
                     Logger.warning(TAG, "Failed to create directory: ${dir.absolutePath}")

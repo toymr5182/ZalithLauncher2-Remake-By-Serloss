@@ -151,6 +151,12 @@ object AllSettings : SettingsRegistry() {
     val jvmArgs = stringSetting("jvmArgs", "")
 
     /**
+     * 设备性能档案已应用到的版本号（内部使用）
+     * 用于保证设备专属默认值只应用一次，用户之后的手动修改不会被覆盖
+     */
+    val devicePerformanceProfileVersion = intSetting("devicePerformanceProfileVersion", 0)
+
+    /**
      * 已禁用的原生库插件列表
      */
     val disableNativeLibPlugins = stringListSetting("nativeLibPlugins", emptyList())

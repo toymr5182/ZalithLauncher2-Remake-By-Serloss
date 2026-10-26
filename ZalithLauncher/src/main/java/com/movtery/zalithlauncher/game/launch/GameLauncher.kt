@@ -485,8 +485,15 @@ private fun setRendererEnv(envMap: MutableMap<String, String>, version: Version)
     if (renderer != GL4ESRenderer && renderer != NGGL4ESRenderer) {
         envMap["MESA_LOADER_DRIVER_OVERRIDE"] = "zink"
         //着色器缓存：旧变量供旧版 Mesa 插件使用，新变量名从 Mesa 22.1 起生效，避免重复编译造成的卡顿
-        envMap["MESA_GLSL_CACHE_DIR"] = PathManager.DIR_CACHE.absolutePath
-        envMap["MESA_SHADER_CACHE_DIR"] = File(PathManager.DIR_CACHE, "mesa_shader_cache").absolutePath
+        //缓存必须落在私有 files 目录，放在 cacheDir 会被系统清理，清理后光影着色器需要全部重新编译
+        val shaderCacheDir = PathManager.DIR_SHADER_CACHE.also { dir ->
+            if (!dir.isDirectory) dir.mkdirs()
+        }
+        envMap["MESA_GLSL_CACHE_DIR"] = shaderCacheDir.absolutePath
+        envMap["MESA_SHADER_CACHE_DIR"] = shaderCacheDir.absolutePath
+        //显式开启磁盘着色器缓存（部分发行版构建默认关闭），并放开缓存上限避免大光影包反复淘汰条目
+        envMap["MESA_SHADER_CACHE_DISABLE"] = "false"
+        envMap["MESA_SHADER_CACHE_MAX_SIZE"] = "2G"
         envMap["MESA_GL_VERSION_OVERRIDE"] = "4.6"
         envMap["MESA_GLSL_VERSION_OVERRIDE"] = "460"
         envMap["force_glsl_extensions_warn"] = "true"
