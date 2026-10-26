@@ -22,6 +22,7 @@ import com.movtery.zalithlauncher.game.renderer.renderers.ExynosZinkRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.FreedrenoRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.GL4ESRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.KopperZinkRenderer
+import com.movtery.zalithlauncher.game.renderer.renderers.MobileGluesRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.NGGL4ESRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.PanfrostRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.VirGLRenderer
@@ -52,7 +53,9 @@ object Renderers {
         if (Exynos1580Profile.isDevice) {
             //Xclipse 540 只能使用系统 Vulkan 驱动：
             //VirGL 需要虚拟 GPU 宿主，Freedreno / Panfrost 分别只支持 Adreno / Mali，均无法在该设备上工作
+            //MobileGlues 放在首位：未手动选择渲染器时默认使用，光影与 FSR1 均由它负责
             addRenderers(
+                MobileGluesRenderer,
                 NGGL4ESRenderer,
                 GL4ESRenderer,
                 ExynosZinkRenderer

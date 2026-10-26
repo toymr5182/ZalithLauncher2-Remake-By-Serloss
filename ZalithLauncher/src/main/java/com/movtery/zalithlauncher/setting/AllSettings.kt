@@ -110,6 +110,16 @@ object AllSettings : SettingsRegistry() {
     val vsyncInZink = boolSetting("vsyncInZink", false)
 
     /**
+     * MobileGlues 使用 ANGLE 的 Vulkan 后端（关闭则强制使用厂商 GLES 驱动）
+     */
+    val mobileGluesUseAngle = boolSetting("mobileGluesUseAngle", true)
+
+    /**
+     * MobileGlues 启用 FSR1 Performance 放大（内部低分辨率渲染）
+     */
+    val mobileGluesFsrPerformance = boolSetting("mobileGluesFsrPerformance", true)
+
+    /**
      * 启用着色器日志输出
      */
     val dumpShaders = boolSetting("dumpShaders", false)

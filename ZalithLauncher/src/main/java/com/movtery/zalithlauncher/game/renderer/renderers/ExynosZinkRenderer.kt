@@ -43,7 +43,11 @@ object ExynosZinkRenderer : RendererInterface {
             //强制使用三星系统 Vulkan 驱动
             "POJAV_ZINK_PREFER_SYSTEM_DRIVER" to "1",
             //桌面描述符上传改为延迟提交，降低移动端 CPU 开销（Mesa 可选值：auto / lazy / db）
-            "ZINK_DESCRIPTORS" to "lazy"
+            "ZINK_DESCRIPTORS" to "lazy",
+            //把 GL 调用移到独立线程提交，减少主线程等待驱动的时间
+            "mesa_glthread" to "true",
+            //单文件着色器缓存，避免大量小文件拖慢缓存目录扫描
+            "MESA_DISK_CACHE_SINGLE_FILE" to "1"
         )
     }
 

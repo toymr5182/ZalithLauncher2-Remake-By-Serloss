@@ -1753,6 +1753,14 @@
     <string name="settings_renderer_vsync_in_zink_title">Zink Vsync</string>
     <!-- Summary of the Zink vertical sync switch in the Renderer settings tab -->
     <string name="settings_renderer_vsync_in_zink_summary">Enable vertical sync for the Zink renderer via the system interface</string>
+    <!-- Switch title to run MobileGlues through ANGLE on Exynos 1580 -->
+    <string name="settings_renderer_mobileglues_angle_title">MobileGlues: use ANGLE</string>
+    <!-- Summary of the MobileGlues ANGLE switch -->
+    <string name="settings_renderer_mobileglues_angle_summary">Use the ANGLE Vulkan backend when available. Turn off to force the Samsung GLES driver</string>
+    <!-- Switch title for MobileGlues FSR1 upscaling on Exynos 1580 -->
+    <string name="settings_renderer_mobileglues_fsr_title">MobileGlues: FSR1 performance</string>
+    <!-- Summary of the MobileGlues FSR1 switch -->
+    <string name="settings_renderer_mobileglues_fsr_summary">Render below native resolution and upscale with FSR1. Higher frame rate, slight blur</string>
     <!-- Switch title in the Game settings tab to isolate the data of all installed versions -->
     <string name="settings_game_version_isolation_title">Global Version Isolation</string>
     <!-- Summary of the global version isolation switch in the Game settings tab -->

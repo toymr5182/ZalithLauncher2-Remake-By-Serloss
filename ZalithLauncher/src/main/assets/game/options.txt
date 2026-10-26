@@ -5,7 +5,7 @@ particles:1
 bobView:true
 anaglyph3d:false
 advancedOpengl:false
-maxFps:260
+maxFps:60
 fboEnable:true
 fancyGraphics:false
 ao:0

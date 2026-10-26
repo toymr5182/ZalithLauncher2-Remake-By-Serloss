@@ -79,6 +79,7 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCa
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SwitchSettingsCard
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.customResolutionRange
+import com.movtery.zalithlauncher.utils.device.Exynos1580Profile
 import com.movtery.zalithlauncher.utils.device.checkVulkanSupport
 import com.movtery.zalithlauncher.utils.ensureCustomResolutionInitialized
 import com.movtery.zalithlauncher.utils.getRealScreenSize
@@ -368,6 +369,24 @@ fun RendererSettingsScreen(
                         title = stringResource(R.string.settings_renderer_vsync_in_zink_title),
                         summary = stringResource(R.string.settings_renderer_vsync_in_zink_summary)
                     )
+
+                    if (Exynos1580Profile.isDevice) {
+                        SwitchSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.mobileGluesUseAngle,
+                            title = stringResource(R.string.settings_renderer_mobileglues_angle_title),
+                            summary = stringResource(R.string.settings_renderer_mobileglues_angle_summary)
+                        )
+
+                        SwitchSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.mobileGluesFsrPerformance,
+                            title = stringResource(R.string.settings_renderer_mobileglues_fsr_title),
+                            summary = stringResource(R.string.settings_renderer_mobileglues_fsr_summary)
+                        )
+                    }
 
                     SwitchSettingsCard(
                         modifier = Modifier.fillMaxWidth(),

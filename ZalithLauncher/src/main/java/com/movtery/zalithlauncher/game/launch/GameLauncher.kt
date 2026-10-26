@@ -44,7 +44,9 @@ import com.movtery.zalithlauncher.game.plugin.renderer.RendererPluginManager
 import com.movtery.zalithlauncher.game.plugin.renderer_v2.RendererV2Data
 import com.movtery.zalithlauncher.game.plugin.renderer_v2.data.VersionEnvStorage
 import com.movtery.zalithlauncher.game.renderer.Renderers
+import com.movtery.zalithlauncher.game.renderer.mobileglues.MobileGluesConfig
 import com.movtery.zalithlauncher.game.renderer.renderers.GL4ESRenderer
+import com.movtery.zalithlauncher.game.renderer.renderers.MobileGluesRenderer
 import com.movtery.zalithlauncher.game.renderer.renderers.NGGL4ESRenderer
 import com.movtery.zalithlauncher.game.support.touch_controller.ControllerProxy
 import com.movtery.zalithlauncher.game.version.installed.Version
@@ -434,6 +436,10 @@ private fun setRendererEnv(envMap: MutableMap<String, String>, version: Version)
     val renderer = Renderers.getCurrentRenderer()
     val rendererId = renderer.getRendererId()
 
+    if (renderer == MobileGluesRenderer) {
+        MobileGluesConfig.prepare()
+    }
+
     // SDL 环境变量
     envMap["SDL_OPENGL_LIBRARY"] = rendererId
 
@@ -482,7 +488,7 @@ private fun setRendererEnv(envMap: MutableMap<String, String>, version: Version)
 
     if (RendererPluginManager.selectedRendererPlugin != null) return
 
-    if (renderer != GL4ESRenderer && renderer != NGGL4ESRenderer) {
+    if (renderer != GL4ESRenderer && renderer != NGGL4ESRenderer && renderer != MobileGluesRenderer) {
         envMap["MESA_LOADER_DRIVER_OVERRIDE"] = "zink"
         //着色器缓存：旧变量供旧版 Mesa 插件使用，新变量名从 Mesa 22.1 起生效，避免重复编译造成的卡顿
         //缓存必须落在私有 files 目录，放在 cacheDir 会被系统清理，清理后光影着色器需要全部重新编译
