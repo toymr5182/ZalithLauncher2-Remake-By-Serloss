@@ -35,6 +35,7 @@ import com.movtery.zalithlauncher.game.input.LWJGLCharSender
 import com.movtery.zalithlauncher.game.launch.GameLauncher
 import com.movtery.zalithlauncher.game.launch.LaunchConfig
 import com.movtery.zalithlauncher.game.launch.MCOptions
+import com.movtery.zalithlauncher.game.launch.SodiumConfigProfile
 import com.movtery.zalithlauncher.game.launch.loadLanguage
 import com.movtery.zalithlauncher.game.sdl.SdlBridge
 import com.movtery.zalithlauncher.game.sdl.handleGamepadKeyEvent
@@ -153,6 +154,10 @@ class GameHandler(
 
         if (applyPerformanceProfile) {
             runCatching { performanceMarker.writeText("v2") }
+        }
+
+        if (Exynos1580Profile.isDevice) {
+            SodiumConfigProfile.apply(version.getGameDir())
         }
 
         super.execute(surface, screenSize, scope)
