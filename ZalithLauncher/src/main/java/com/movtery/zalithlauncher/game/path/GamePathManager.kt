@@ -69,10 +69,106 @@ object GamePathManager {
     /** 当前选择的路径 */
     val currentPath = _currentPath.asStateFlow()
 
+    sealed interface MoveState {
+        data object Idle : MoveState
+        data class Running(val stage: MoveStage, val copiedBytes: Long = 0, val totalBytes: Long = 0) : MoveState
+        data class Success(val sourceDeleted: Boolean) : MoveState
+        data class Failed(val reason: String) : MoveState
+    }
+
+    enum class MoveStage { PREPARING, COPYING, VERIFYING, DELETING }
+
+    private val _moveState = MutableStateFlow<MoveState>(MoveState.Idle)
+    val moveState = _moveState.asStateFlow()
+
     /**
      * 启动器默认游戏目录
      */
     fun getDefaultPath(): String = defaultGamePath
+
+    fun getInternalPath(): String = internalGamePath
+
+    fun clearMoveState() {
+        if (_moveState.value !is MoveState.Running) _moveState.value = MoveState.Idle
+    }
+
+    /**
+     * 把当前游戏目录复制到内部存储，校验通过后切换并删除原目录。
+     * 复制/校验失败时保留原目录，不会丢数据。
+     */
+    fun moveCurrentToInternal() {
+        if (_moveState.value is MoveState.Running) return
+        scope.launch {
+            val source = File(_currentPath.value)
+            val target = File(internalGamePath)
+
+            if (source.absolutePath == target.absolutePath) {
+                _moveState.value = MoveState.Success(false)
+                return@launch
+            }
+            if (!source.isDirectory) {
+                _moveState.value = MoveState.Failed("current game folder does not exist")
+                return@launch
+            }
+
+            val existing = target.listFiles()?.filterNot { it.name == ".nomedia" }
+            if (!existing.isNullOrEmpty()) {
+                _moveState.value = MoveState.Failed("internal storage already contains game data")
+                return@launch
+            }
+            val canCleanTarget = existing.isNullOrEmpty()
+            var copyVerified = false
+
+            _moveState.value = MoveState.Running(MoveStage.PREPARING)
+            try {
+                val files = source.walkTopDown().filter { it.isFile }.toList()
+                val totalBytes = files.sumOf { it.length() }
+                if (!target.exists() && !target.mkdirs()) {
+                    throw IllegalStateException("cannot create internal game folder")
+                }
+                val usable = target.usableSpace
+                if (usable > 0 && usable < totalBytes + 64L * 1024 * 1024) {
+                    throw IllegalStateException("not enough free space in internal storage")
+                }
+
+                var copiedBytes = 0L
+                source.walkTopDown().forEach { src ->
+                    val relative = src.relativeTo(source)
+                    val dest = File(target, relative.path)
+                    if (src.isDirectory) {
+                        dest.mkdirs()
+                    } else if (src.isFile) {
+                        dest.parentFile?.mkdirs()
+                        src.copyTo(dest, overwrite = true)
+                        dest.setLastModified(src.lastModified())
+                        copiedBytes += src.length()
+                        _moveState.value = MoveState.Running(MoveStage.COPYING, copiedBytes, totalBytes)
+                    }
+                }
+
+                _moveState.value = MoveState.Running(MoveStage.VERIFYING, copiedBytes, totalBytes)
+                val copiedFiles = target.walkTopDown().filter { it.isFile }.toList()
+                if (copiedFiles.size != files.size ||
+                    copiedFiles.sumOf { it.length() } != totalBytes
+                ) {
+                    throw IllegalStateException("copy verification failed")
+                }
+                copyVerified = true
+
+                //先切换路径；切换失败时源目录还在，不会丢数据
+                saveCurrentPath(INTERNAL_ID)
+                _moveState.value = MoveState.Running(MoveStage.DELETING, copiedBytes, totalBytes)
+                val deleted = source.deleteRecursively()
+                _moveState.value = MoveState.Success(deleted)
+            } catch (e: Exception) {
+                //复制未通过校验时才清理目标；一旦校验通过，即使切换路径失败也保留内部数据
+                if (!copyVerified && canCleanTarget) {
+                    runCatching { target.deleteRecursively() }
+                }
+                _moveState.value = MoveState.Failed(e.message ?: "unknown error")
+            }
+        }
+    }
 
     /**
      * 当前用户路径

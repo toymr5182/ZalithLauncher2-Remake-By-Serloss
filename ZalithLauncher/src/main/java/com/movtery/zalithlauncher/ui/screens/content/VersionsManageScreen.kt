@@ -37,9 +37,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.nonInteractiveScrollbar
@@ -365,7 +369,10 @@ private fun LeftMenu(
     ) {
         val gamePaths by GamePathManager.gamePathData.collectAsStateWithLifecycle()
         val currentPath by GamePathManager.currentPath.collectAsStateWithLifecycle()
+        val moveState by GamePathManager.moveState.collectAsStateWithLifecycle()
         val context = LocalContext.current
+        var showMoveConfirm by remember { mutableStateOf(false) }
+        val isInternalPath = currentPath == GamePathManager.getInternalPath()
 
         LazyColumn(
             modifier = Modifier
@@ -410,6 +417,18 @@ private fun LeftMenu(
             }
         }
 
+        if (!isInternalPath) {
+            ScalingActionButton(
+                modifier = Modifier
+                    .padding(start = 12.dp, top = 8.dp)
+                    .fillMaxWidth(),
+                enabled = moveState !is GamePathManager.MoveState.Running,
+                onClick = { showMoveConfirm = true }
+            ) {
+                MarqueeText(text = stringResource(R.string.versions_manage_move_internal))
+            }
+        }
+
         ScalingActionButton(
             modifier = Modifier
                 .padding(start = 12.dp)
@@ -439,6 +458,97 @@ private fun LeftMenu(
             onClick = onCleanupGameFiles
         ) {
             MarqueeText(text = stringResource(R.string.versions_manage_cleanup))
+        }
+
+        if (showMoveConfirm) {
+            AlertDialog(
+                onDismissRequest = { showMoveConfirm = false },
+                title = { Text(stringResource(R.string.versions_manage_move_internal_confirm_title)) },
+                text = { Text(stringResource(R.string.versions_manage_move_internal_confirm_message)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showMoveConfirm = false
+                            GamePathManager.moveCurrentToInternal()
+                        }
+                    ) {
+                        Text(stringResource(R.string.generic_confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showMoveConfirm = false }) {
+                        Text(stringResource(R.string.generic_cancel))
+                    }
+                }
+            )
+        }
+
+        when (val state = moveState) {
+            GamePathManager.MoveState.Idle -> {}
+            is GamePathManager.MoveState.Running -> {
+                val ratio = if (state.totalBytes > 0) {
+                    (state.copiedBytes.toFloat() / state.totalBytes).coerceIn(0f, 1f)
+                } else 0f
+                AlertDialog(
+                    onDismissRequest = {},
+                    title = { Text(stringResource(R.string.versions_manage_move_internal_title)) },
+                    text = {
+                        Column {
+                            Text(
+                                when (state.stage) {
+                                    GamePathManager.MoveStage.PREPARING ->
+                                        stringResource(R.string.versions_manage_move_internal_preparing)
+                                    GamePathManager.MoveStage.COPYING ->
+                                        stringResource(
+                                            R.string.versions_manage_move_internal_copying,
+                                            (ratio * 100).roundToInt()
+                                        )
+                                    GamePathManager.MoveStage.VERIFYING ->
+                                        stringResource(R.string.versions_manage_move_internal_verifying)
+                                    GamePathManager.MoveStage.DELETING ->
+                                        stringResource(R.string.versions_manage_move_internal_deleting)
+                                }
+                            )
+                            if (state.stage != GamePathManager.MoveStage.PREPARING) {
+                                LinearProgressIndicator(
+                                    progress = { ratio },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp)
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {}
+                )
+            }
+            is GamePathManager.MoveState.Success -> {
+                AlertDialog(
+                    onDismissRequest = GamePathManager::clearMoveState,
+                    title = { Text(stringResource(R.string.versions_manage_move_internal_success)) },
+                    text = {
+                        if (!state.sourceDeleted) {
+                            Text(stringResource(R.string.versions_manage_move_internal_success_kept))
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = GamePathManager::clearMoveState) {
+                            Text(stringResource(R.string.generic_confirm))
+                        }
+                    }
+                )
+            }
+            is GamePathManager.MoveState.Failed -> {
+                AlertDialog(
+                    onDismissRequest = GamePathManager::clearMoveState,
+                    title = { Text(stringResource(R.string.versions_manage_move_internal_failed, state.reason)) },
+                    confirmButton = {
+                        TextButton(onClick = GamePathManager::clearMoveState) {
+                            Text(stringResource(R.string.generic_confirm))
+                        }
+                    }
+                )
+            }
         }
     }
 }

@@ -1181,6 +1181,28 @@
     <string name="versions_manage_game_path_default">Default Game Folder</string>
     <!-- Button to add a new game folder; also the title of the add-folder dialog -->
     <string name="versions_manage_game_path_add_new">Add Game Folder</string>
+    <!-- Button to move the current game folder into app-private internal storage -->
+    <string name="versions_manage_move_internal">Move game data to internal storage</string>
+    <!-- Title of the confirmation dialog for moving game data -->
+    <string name="versions_manage_move_internal_confirm_title">Move game data?</string>
+    <!-- Message of the confirmation dialog for moving game data -->
+    <string name="versions_manage_move_internal_confirm_message">Copies the current game folder to app-private internal storage, verifies it, switches the path, and deletes the original. Make sure there is enough free space.</string>
+    <!-- Progress dialog title while moving game data -->
+    <string name="versions_manage_move_internal_title">Moving game data</string>
+    <!-- Move progress: preparing -->
+    <string name="versions_manage_move_internal_preparing">Preparing…</string>
+    <!-- Move progress: copying; %1$d is percent -->
+    <string name="versions_manage_move_internal_copying">Copying… %1$d%%</string>
+    <!-- Move progress: verifying copied files -->
+    <string name="versions_manage_move_internal_verifying">Verifying copied files…</string>
+    <!-- Move progress: deleting the original folder -->
+    <string name="versions_manage_move_internal_deleting">Deleting original folder…</string>
+    <!-- Move succeeded and the original was deleted -->
+    <string name="versions_manage_move_internal_success">Game data moved to internal storage.</string>
+    <!-- Move succeeded but the original folder could not be deleted -->
+    <string name="versions_manage_move_internal_success_kept">Game data moved to internal storage, but the original folder could not be deleted.</string>
+    <!-- Move failed; %1$s is the reason -->
+    <string name="versions_manage_move_internal_failed">Move failed: %1$s</string>
     <!-- Label of the name field in the add and rename game folder dialogs -->
     <string name="versions_manage_game_path_edit_title">Rename Game Folder</string>
     <!-- Title of the confirmation dialog for unlinking a game folder -->
