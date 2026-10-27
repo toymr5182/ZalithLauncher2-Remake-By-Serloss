@@ -626,7 +626,7 @@ fun getSocName(): String {
  * JVM 的 worker/GC 线程按这个数量创建，避免小核拖慢区块构建与渲染。
  */
 private fun getBigCoreCount(): Int {
-    val available = Runtime.getRuntime().availableProcessors()
+    val available = java.lang.Runtime.getRuntime().availableProcessors()
 
     val capacities = (0 until 16).mapNotNull { cpu ->
         runCatching {
