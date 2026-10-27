@@ -154,7 +154,7 @@ fun GamePathItemLayout(
     onDelete: () -> Unit = {},
     enabled: Boolean = true,
 ) {
-    val notDefault = item.id != GamePathManager.DEFAULT_ID
+    val notDefault = item.id != GamePathManager.DEFAULT_ID && item.id != GamePathManager.INTERNAL_ID
 
     NavigationDrawerItem(
         modifier = modifier,

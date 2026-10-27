@@ -48,9 +48,11 @@ import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import com.movtery.zalithlauncher.ui.screens.game.GameScreen
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogState
 import com.movtery.zalithlauncher.ui.screens.game.elements.mutableStateOfLog
+import com.movtery.zalithlauncher.utils.device.Exynos1580Profile
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.GamepadViewModel
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -95,9 +97,28 @@ class GameHandler(
 
         MCOptions.setup(activity, version)
 
+        //每个版本只应用一次性能 profile；之后玩家自己改的设置不会被覆盖
+        val performanceMarker = File(version.getGameDir(), ".zalith_perf_profile_v2")
+        val applyPerformanceProfile = Exynos1580Profile.isDevice && !performanceMarker.isFile
+
         MCOptions.apply {
             set("fullscreen", "false")
             set("touchscreen", "false")
+
+            if (applyPerformanceProfile) {
+                //把叶子/草地密集场景的填充率和区块加载开销压下来
+                set("graphicsMode", "0")
+                set("fancyGraphics", "false")
+                set("mipmapLevels", "4")
+                set("renderDistance", "4")
+                set("simulationDistance", "4")
+                set("entityDistanceScaling", "0.5")
+                set("biomeBlendRadius", "0")
+                set("clouds", "false")
+                set("particles", "2")
+                set("ao", "0")
+                set("enableVsync", "false")
+            }
 
 //            //关闭文本转语音功能
 //            set("options.narrator", "0")
@@ -128,6 +149,10 @@ class GameHandler(
 
             loadLanguage(version.getVersionInfo()!!.minecraftVersion)
             save()
+        }
+
+        if (applyPerformanceProfile) {
+            runCatching { performanceMarker.writeText("v2") }
         }
 
         super.execute(surface, screenSize, scope)

@@ -262,6 +262,8 @@ abstract class Launcher(
             put("jdk.lang.Process.launchMechanism", "FORK")
 
             put("sodium.checks.issue2561", "false")
+            //LWJGL 的 GL 函数指针检查在每次调用都有开销；游戏侧已经做过能力判断，关闭后更省 CPU
+            put("org.lwjgl.util.NoChecks", "true")
 
             put("file.encoding", "UTF-8")
             put("sun.stdout.encoding", "UTF-8")
@@ -352,6 +354,10 @@ abstract class Launcher(
         args.add("-Xms${ramAllocationString}M")
         args.add("-Xmx${ramAllocationString}M")
 
+        //降低 G1 的停顿目标，减少区块加载/实体渲染时的长卡顿；Java 8 的 ParallelGC 会忽略该目标
+        args.add("-XX:MaxGCPauseMillis=50")
+        args.add("-XX:+ParallelRefProcEnabled")
+
         args.add("-Dorg.lwjgl.openal.libname=${PathManager.DIR_NATIVE_LIB}/libopenal.so")
 
         // Force LWJGL to use the Freetype library intended for it, instead of using the one
@@ -365,8 +371,8 @@ abstract class Launcher(
         // We don't have jemalloc for our LWJGL so set the allocator to system to avoid error logs
         args.add("-Dorg.lwjgl.system.allocator=system")
 
-        // Some phones are not using the right number of cores, fix that
-        args.add("-XX:ActiveProcessorCount=${java.lang.Runtime.getRuntime().availableProcessors()}")
+        //部分大小核机型按全部核心创建 worker 会让小核拖慢区块构建，优先只使用大核
+        args.add("-XX:ActiveProcessorCount=${getBigCoreCount()}")
     }
 
     protected fun MutableList<String>.purgeArg(argStart: String) {
@@ -613,4 +619,36 @@ fun getSocName(): String {
                 reader.readLine()
             }
     }.getOrNull()?.takeIf { it.isNotBlank() } ?: Build.HARDWARE
+}
+
+/**
+ * 统计大核数量：优先读取内核归一化算力 cpu_capacity，缺失时按最高频率估算。
+ * JVM 的 worker/GC 线程按这个数量创建，避免小核拖慢区块构建与渲染。
+ */
+private fun getBigCoreCount(): Int {
+    val available = Runtime.getRuntime().availableProcessors()
+
+    val capacities = (0 until 16).mapNotNull { cpu ->
+        runCatching {
+            File("/sys/devices/system/cpu/cpu$cpu/cpu_capacity").readText().trim().toFloat()
+        }.getOrNull()
+    }
+    if (capacities.size >= 4) {
+        val max = capacities.maxOrNull() ?: return available
+        val big = capacities.count { it >= max * 0.75f }
+        if (big >= 2) return big.coerceAtMost(available)
+    }
+
+    val frequencies = (0 until 16).mapNotNull { cpu ->
+        runCatching {
+            File("/sys/devices/system/cpu/cpu$cpu/cpufreq/cpuinfo_max_freq").readText().trim().toLong()
+        }.getOrNull()
+    }
+    if (frequencies.size >= 4) {
+        val max = frequencies.maxOrNull() ?: return available
+        val big = frequencies.count { it * 4 >= max * 3 }
+        if (big >= 2) return big.coerceAtMost(available)
+    }
+
+    return available
 }

@@ -53,14 +53,16 @@ object MobileGluesConfig {
             addProperty("enableANGLE", if (useAngle) 1 else 2)
             //0 = 自动忽略错误级别，其余档位会掩盖真实的着色器错误
             addProperty("enableNoError", 0)
-            addProperty("enableExtTimerQuery", 1)
+            //计时查询对游戏帧率没有帮助，关闭后少暴露一组扩展和查询点
+            addProperty("enableExtTimerQuery", 0)
             //GL 4.6 + compute shader：Iris 光影包常用
             addProperty("enableExtComputeShader", 1)
-            addProperty("enableExtDirectStateAccess", 0)
+            //让 Sodium/Iris 走 DSA 路径，减少区块与实体的状态切换
+            addProperty("enableExtDirectStateAccess", 1)
             //Xclipse 上启用 ANGLE 时修正深度清除，避免手持物品穿模
             addProperty("angleDepthClearFixMode", if (useAngle) 1 else 0)
-            //1 GiB GLSL 缓存，避免大型光影包反复编译
-            addProperty("maxGlslCacheSize", 1024)
+            //2 GiB GLSL 缓存，避免大型光影包反复编译
+            addProperty("maxGlslCacheSize", 2048)
             addProperty("customGLVersion", 46)
             //FSR1 的 RGBA32F 渲染目标在 Xclipse/ANGLE 上不完整，开启会黑屏，始终关闭
             addProperty("fsr1Setting", 0)

@@ -50,9 +50,17 @@ object GamePathManager {
     private val mutex = Mutex()
     private val defaultGamePath = File(PathManager.DIR_FILES_EXTERNAL, ".minecraft").absolutePath
     /**
+     * 应用私有目录：不经过 FUSE，区块/资源包/存档读写更快
+     */
+    private val internalGamePath = File(PathManager.DIR_FILES_PRIVATE, "game").absolutePath
+    /**
      * 默认游戏目录的ID
      */
     const val DEFAULT_ID = "default"
+    /**
+     * 内置高速内部存储目录的ID
+     */
+    const val INTERNAL_ID = "internal"
 
     private val _gamePathData = MutableStateFlow<List<GamePath>>(listOf())
     val gamePathData = _gamePathData.asStateFlow()
@@ -87,6 +95,8 @@ object GamePathManager {
                 val newValue = mutableListOf<GamePath>()
                 //添加默认游戏目录
                 newValue.add(0, GamePath(DEFAULT_ID, "", defaultGamePath))
+                //内置内部存储目录，避开 /sdcard 的 FUSE 开销
+                newValue.add(1, GamePath(INTERNAL_ID, "Internal storage (fast)", internalGamePath))
 
                 run parseConfig@{
                     //从数据库中加载游戏目录
@@ -96,7 +106,8 @@ object GamePathManager {
 
                 _gamePathData.update { newValue }
 
-                if (canHandlePermission &&  !hasStoragePermission) {
+                //内部存储目录不需要外部存储权限，不能被强制切回默认目录
+                if (canHandlePermission && !hasStoragePermission && currentGamePathId.getValue() != INTERNAL_ID) {
                     _currentPath.update { defaultGamePath }
                     saveDefaultPath(false)
                 } else {
@@ -179,7 +190,9 @@ object GamePathManager {
      * @throws IllegalArgumentException 未找到匹配项
      */
     fun saveCurrentPath(id: String, reloadVersions: Boolean = true) {
-        if (canHandlePermission && !hasStoragePermission) throw IllegalStateException("Storage permissions are not granted")
+        if (id != INTERNAL_ID && canHandlePermission && !hasStoragePermission) {
+            throw IllegalStateException("Storage permissions are not granted")
+        }
         if (!containsId(id)) throw IllegalArgumentException("No match found!")
         saveCurrentPathUncheck(id, reloadVersions)
     }
