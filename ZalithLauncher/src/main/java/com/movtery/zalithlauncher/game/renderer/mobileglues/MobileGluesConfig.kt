@@ -55,21 +55,22 @@ object MobileGluesConfig {
             addProperty("enableNoError", 0)
             //计时查询对游戏帧率没有帮助，关闭后少暴露一组扩展和查询点
             addProperty("enableExtTimerQuery", 0)
-            //GL 4.6 + compute shader：Iris 光影包常用
-            addProperty("enableExtComputeShader", 1)
+            //Xclipse/RDNA 上 compute shader 的转译路径明显慢于普通渲染管线
+            addProperty("enableExtComputeShader", 0)
             //让 Sodium/Iris 走 DSA 路径，减少区块与实体的状态切换
             addProperty("enableExtDirectStateAccess", 1)
             //Xclipse 上启用 ANGLE 时修正深度清除，避免手持物品穿模
             addProperty("angleDepthClearFixMode", if (useAngle) 1 else 0)
-            //2 GiB GLSL 缓存，避免大型光影包反复编译
-            addProperty("maxGlslCacheSize", 2048)
+            //只保留常用光影缓存量，避免大缓存目录拖慢初始化
+            addProperty("maxGlslCacheSize", 128)
             addProperty("customGLVersion", 46)
             //FSR1 的 RGBA32F 渲染目标在 Xclipse/ANGLE 上不完整，开启会黑屏，始终关闭
             addProperty("fsr1Setting", 0)
             addProperty("hideMGEnvLevel", 0)
+            //Sodium 的现代 GL 批量绘制在 Xclipse 上优先走 multiindirect，比 native 路径稳定
             addProperty(
                 "multidrawOrder",
-                "native,multiindirect,multibasevertex,multiarrays,indirect,basevertex,unroll,compute"
+                "multiindirect,native,multibasevertex,multiarrays,indirect,basevertex,unroll,compute"
             )
         }
 
