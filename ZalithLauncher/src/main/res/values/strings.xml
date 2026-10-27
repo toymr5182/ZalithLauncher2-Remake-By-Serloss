@@ -136,6 +136,10 @@
     <string name="theme_color_urban_ash">Urban Ash</string>
     <!-- Option of the theme color setting in launcher settings -->
     <string name="theme_color_verdant_dawn">Silent Forest Dawn</string>
+    <!-- Name of the light lavender glass theme -->
+    <string name="theme_color_lavender_light">Lavender Light</string>
+    <!-- Name of the dark lavender glass theme -->
+    <string name="theme_color_lavender_dark">Lavender Dark</string>
     <!-- Title of the color picker dialog -->
     <string name="theme_color_picker_title">Color Picker</string>
     <!-- Button in the color picker dialog to edit the color as a hex code -->

@@ -45,6 +45,83 @@ import com.movtery.zalithlauncher.utils.festival.LocalFestivals
 import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 
+
+private val lavenderLight = lightColorScheme(
+    primary = Color(0xFF7C5CFF),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE7DEFF),
+    onPrimaryContainer = Color(0xFF21124A),
+    secondary = Color(0xFF6F8CFF),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFDDE6FF),
+    onSecondaryContainer = Color(0xFF0B1B4A),
+    tertiary = Color(0xFFB07CFF),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFF0E3FF),
+    onTertiaryContainer = Color(0xFF2B0A4A),
+    error = Color(0xFFBA1A1A),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFF7F3FF),
+    onBackground = Color(0xFF1E1733),
+    surface = Color(0xFFF7F3FF),
+    onSurface = Color(0xFF1E1733),
+    surfaceVariant = Color(0xFFE9E1F5),
+    onSurfaceVariant = Color(0xFF4A4160),
+    outline = Color(0xFF7B7192),
+    outlineVariant = Color(0xFFD5CBE8),
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFF332B47),
+    inverseOnSurface = Color(0xFFF5EEFF),
+    inversePrimary = Color(0xFFCFC0FF),
+    surfaceDim = Color(0xFFDED5EF),
+    surfaceBright = Color(0xFFFBF8FF),
+    surfaceContainerLowest = Color(0xFFFFFFFF),
+    surfaceContainerLow = Color(0xFFFBF7FF),
+    surfaceContainer = Color(0xFFF3EDFF),
+    surfaceContainerHigh = Color(0xFFEDE6FA),
+    surfaceContainerHighest = Color(0xFFE7DFF5),
+)
+
+private val lavenderDark = darkColorScheme(
+    primary = Color(0xFFC9B8FF),
+    onPrimary = Color(0xFF2E1A66),
+    primaryContainer = Color(0xFF4A33A3),
+    onPrimaryContainer = Color(0xFFE9DEFF),
+    secondary = Color(0xFF8FB6FF),
+    onSecondary = Color(0xFF002E6A),
+    secondaryContainer = Color(0xFF244C8C),
+    onSecondaryContainer = Color(0xFFD8E6FF),
+    tertiary = Color(0xFFD6A8FF),
+    onTertiary = Color(0xFF3A0A5E),
+    tertiaryContainer = Color(0xFF5A2A85),
+    onTertiaryContainer = Color(0xFFF2DEFF),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF120C24),
+    onBackground = Color(0xFFEFE7FF),
+    surface = Color(0xFF120C24),
+    onSurface = Color(0xFFEFE7FF),
+    surfaceVariant = Color(0xFF4A4060),
+    onSurfaceVariant = Color(0xFFCFC4E6),
+    outline = Color(0xFF998DB8),
+    outlineVariant = Color(0xFF4A4060),
+    scrim = Color(0xFF000000),
+    inverseSurface = Color(0xFFEFE7FF),
+    inverseOnSurface = Color(0xFF332B47),
+    inversePrimary = Color(0xFF6B4FE0),
+    surfaceDim = Color(0xFF120C24),
+    surfaceBright = Color(0xFF3A2F55),
+    surfaceContainerLowest = Color(0xFF0C071A),
+    surfaceContainerLow = Color(0xFF19112E),
+    surfaceContainer = Color(0xFF1E1537),
+    surfaceContainerHigh = Color(0xFF291E45),
+    surfaceContainerHighest = Color(0xFF342853),
+)
+
 private val embermireLight = lightColorScheme(
     primary = primaryLight.embermire,
     onPrimary = onPrimaryLight.embermire,
@@ -629,6 +706,8 @@ fun ZalithLauncherTheme(
                 ColorThemeType.VERDANTFIELD -> verdantFieldDark
                 ColorThemeType.URBAN_ASH -> urbanAshDark
                 ColorThemeType.VERDANT_DAWN -> verdantDawnDark
+                ColorThemeType.LAVENDER_LIGHT -> lavenderLight
+                ColorThemeType.LAVENDER_DARK -> lavenderDark
                 ColorThemeType.CUSTOM -> customDark(
                     color = customColor,
                     style = customPaletteStyle
@@ -644,6 +723,8 @@ fun ZalithLauncherTheme(
                 ColorThemeType.VERDANTFIELD -> verdantFieldLight
                 ColorThemeType.URBAN_ASH -> urbanAshLight
                 ColorThemeType.VERDANT_DAWN -> verdantDawnLight
+                ColorThemeType.LAVENDER_LIGHT -> lavenderLight
+                ColorThemeType.LAVENDER_DARK -> lavenderDark
                 ColorThemeType.CUSTOM -> customLight(
                     color = customColor,
                     style = customPaletteStyle

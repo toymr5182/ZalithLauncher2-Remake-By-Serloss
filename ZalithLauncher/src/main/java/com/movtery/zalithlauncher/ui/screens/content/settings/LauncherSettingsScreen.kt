@@ -111,6 +111,7 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCa
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SwitchSettingsCard
 import com.movtery.zalithlauncher.ui.systemLocaleStringResource
 import com.movtery.zalithlauncher.ui.theme.ColorThemeType
+import com.movtery.zalithlauncher.ui.theme.LauncherThemeBackground
 import com.movtery.zalithlauncher.ui.theme.cardColor
 import com.movtery.zalithlauncher.ui.theme.onCardColor
 import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
@@ -140,6 +141,7 @@ fun LauncherSettingsScreen(
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
 ) {
     val context = LocalContext.current
+    val themeBackgroundViewModel = LocalBackgroundViewModel.current
 
     BaseScreen(
         Triple(key, mainScreenKey, false),
@@ -184,12 +186,21 @@ fun LauncherSettingsScreen(
                                 ColorThemeType.VERDANTFIELD -> stringResource(R.string.theme_color_verdant_field)
                                 ColorThemeType.URBAN_ASH -> stringResource(R.string.theme_color_urban_ash)
                                 ColorThemeType.VERDANT_DAWN -> stringResource(R.string.theme_color_verdant_dawn)
+                                ColorThemeType.LAVENDER_LIGHT -> stringResource(R.string.theme_color_lavender_light)
+                                ColorThemeType.LAVENDER_DARK -> stringResource(R.string.theme_color_lavender_dark)
                                 ColorThemeType.CUSTOM -> stringResource(R.string.generic_custom)
                             }
                         },
                         maxItemsInEachRow = 5,
                         onRadioClick = { enum ->
-                            if (enum == ColorThemeType.CUSTOM) customColorOperation = CustomColorOperation.Dialog
+                            when (enum) {
+                                ColorThemeType.CUSTOM -> customColorOperation = CustomColorOperation.Dialog
+                                ColorThemeType.LAVENDER_LIGHT,
+                                ColorThemeType.LAVENDER_DARK -> themeBackgroundViewModel?.let {
+                                    LauncherThemeBackground.apply(context, enum, it)
+                                }
+                                else -> {}
+                            }
                         }
                     )
 

@@ -171,6 +171,27 @@ class BackgroundViewModel: ViewModel() {
         }
     }
 
+    /**
+     * 把内置主题背景复制到当前背景文件并刷新显示。
+     */
+    fun applyBuiltInBackground(context: Context, assetPath: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    val temp = File(backgroundFile.parentFile, "background.tmp")
+                    context.assets.open(assetPath).use { input ->
+                        temp.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    if (!temp.renameTo(backgroundFile)) {
+                        backgroundFile.writeBytes(temp.readBytes())
+                        temp.delete()
+                    }
+                }
+            }
+            updateState()
+        }
+    }
+
     suspend fun import(context: Context, result: Uri) {
         withContext(Dispatchers.IO) {
             FileUtils.deleteQuietly(backgroundFile)
