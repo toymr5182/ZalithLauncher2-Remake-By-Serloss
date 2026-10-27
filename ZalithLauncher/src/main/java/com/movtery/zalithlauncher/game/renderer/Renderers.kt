@@ -53,7 +53,7 @@ object Renderers {
         if (Exynos1580Profile.isDevice) {
             //Xclipse 540 只能使用系统 Vulkan 驱动：
             //VirGL 需要虚拟 GPU 宿主，Freedreno / Panfrost 分别只支持 Adreno / Mali，均无法在该设备上工作
-            //MobileGlues 放在首位：未手动选择渲染器时默认使用，光影与 FSR1 均由它负责
+            //MobileGlues 放在首位：未手动选择渲染器时默认使用，负责光影与 GL 4.6 转译
             addRenderers(
                 MobileGluesRenderer,
                 NGGL4ESRenderer,

@@ -378,14 +378,6 @@ fun RendererSettingsScreen(
                             title = stringResource(R.string.settings_renderer_mobileglues_angle_title),
                             summary = stringResource(R.string.settings_renderer_mobileglues_angle_summary)
                         )
-
-                        SwitchSettingsCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Middle,
-                            unit = AllSettings.mobileGluesFsrPerformance,
-                            title = stringResource(R.string.settings_renderer_mobileglues_fsr_title),
-                            summary = stringResource(R.string.settings_renderer_mobileglues_fsr_summary)
-                        )
                     }
 
                     SwitchSettingsCard(

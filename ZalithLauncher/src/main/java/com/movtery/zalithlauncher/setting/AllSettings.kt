@@ -111,13 +111,11 @@ object AllSettings : SettingsRegistry() {
 
     /**
      * MobileGlues 使用 ANGLE 的 Vulkan 后端（关闭则强制使用厂商 GLES 驱动）
+     *
+     * 默认关闭：Xclipse 540 上原生 GLES 路径少一层转译，
+     * 树叶、实体和区块上传的帧时间明显更低。
      */
-    val mobileGluesUseAngle = boolSetting("mobileGluesUseAngle", true)
-
-    /**
-     * MobileGlues 启用 FSR1 Performance 放大（内部低分辨率渲染）
-     */
-    val mobileGluesFsrPerformance = boolSetting("mobileGluesFsrPerformance", true)
+    val mobileGluesUseAngle = boolSetting("mobileGluesUseAngle", false)
 
     /**
      * 启用着色器日志输出

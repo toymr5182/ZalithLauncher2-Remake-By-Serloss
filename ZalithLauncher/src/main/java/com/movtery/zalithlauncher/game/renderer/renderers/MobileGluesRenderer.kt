@@ -25,8 +25,8 @@ import com.movtery.zalithlauncher.path.PathManager
 /**
  * MobileGlues 渲染器
  *
- * 运行在宿主 OpenGL ES / ANGLE 之上，把桌面 OpenGL 调用翻译成 GLES，
- * 支持 Iris 光影、Sodium 与 FSR1 放大。配置由 [MobileGluesConfig] 按 Exynos 1580 调校
+ * 运行在宿主 OpenGL ES 之上，把桌面 OpenGL 调用翻译成 GLES，
+ * 支持 Iris 光影与 Sodium。配置由 [MobileGluesConfig] 按 Exynos 1580 调校
  */
 object MobileGluesRenderer : RendererInterface {
     override fun getRendererId(): String = "opengles3"
@@ -35,7 +35,7 @@ object MobileGluesRenderer : RendererInterface {
 
     override fun getRendererName(): String = "MobileGlues (Exynos 1580)"
 
-    override fun getRendererSummary(): String = "OpenGL 4.6 → GLES translation, Iris shaders and FSR1 upscaling"
+    override fun getRendererSummary(): String = "OpenGL 4.6 → GLES translation, Iris shaders and Sodium"
 
     override fun getMinMCVersion(): String = "1.17"
 

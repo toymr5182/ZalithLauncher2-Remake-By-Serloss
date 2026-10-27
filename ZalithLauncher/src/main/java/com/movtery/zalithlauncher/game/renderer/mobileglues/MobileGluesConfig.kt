@@ -47,7 +47,6 @@ object MobileGluesConfig {
      */
     fun prepare() {
         val useAngle = AllSettings.mobileGluesUseAngle.getValue()
-        val fsrPerformance = AllSettings.mobileGluesFsrPerformance.getValue()
 
         val config = JsonObject().apply {
             //1 = 支持时启用 ANGLE，2 = 强制使用厂商 GLES 驱动
@@ -63,8 +62,8 @@ object MobileGluesConfig {
             //1 GiB GLSL 缓存，避免大型光影包反复编译
             addProperty("maxGlslCacheSize", 1024)
             addProperty("customGLVersion", 46)
-            //0 = 关闭；4 = FSR1 Performance，内部低分辨率渲染后放大
-            addProperty("fsr1Setting", if (fsrPerformance) 4 else 0)
+            //FSR1 的 RGBA32F 渲染目标在 Xclipse/ANGLE 上不完整，开启会黑屏，始终关闭
+            addProperty("fsr1Setting", 0)
             addProperty("hideMGEnvLevel", 0)
             addProperty(
                 "multidrawOrder",
