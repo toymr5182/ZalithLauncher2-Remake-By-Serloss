@@ -1,17 +1,23 @@
-# Zalith Launcher 2
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
+# Serloss Launcher
+[![Build CI](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml/badge.svg)](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml)
 
 [English](README_EN_US.md) | [繁體中文](README_ZH_TW.md)
 
+**Serloss Launcher** is an unofficial, performance-focused fork of [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) for **Android**. It keeps the modern **Jetpack Compose** / **Material Design 3** UI and the [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) launch core, while tuning the rendering path for smoother gameplay.
+
+## Performance and optimization
+
+- Direct `SurfaceView` output for the game surface, removing the extra `TextureView` GPU copy and composition pass.
+- Tuned renderer defaults for MobileGlues, Zink, and Mesa shader caches.
+- Lower memory pressure through adjusted JVM heap and GC defaults.
+- Performance-oriented Sodium and Minecraft graphics defaults, with user overrides preserved.
+- Open source under **GPL-3.0**. Source code, licenses, and build scripts are public.
 
 > [!IMPORTANT]
-> 该项目与 [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher) 属于两个完全不同的项目  
+> This is an **unofficial modified build**. It is not affiliated with or endorsed by the upstream Zalith Launcher 2 project. Upstream copyright and attribution are preserved.
 
-**Zalith Launcher 2** 是一个全新设计、面向 **Android 设备** 的 [Minecraft: Java Edition](https://www.minecraft.net/) 启动器。项目使用 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 作为启动核心，采用 **Jetpack Compose** 与 **Material Design 3** 构建现代化 UI 体验。  
-我们目前正在搭建自己的官方网站 [zalithlauncher.cn](https://zalithlauncher.cn)  
-此外，我们已注意到有第三方使用“Zalith Launcher”名称搭建了一个看似官方的网站。请注意：**该网站并非我们创建**，其通过冒用名义并植入广告牟利。我们对此类行为**不参与、不认可、不信任**。  
-请务必提高警惕，**谨防个人隐私信息泄露**！
+> [!NOTE]
+> Upstream project: [ZalithLauncher/ZalithLauncher2](https://github.com/ZalithLauncher/ZalithLauncher2). This fork is maintained by **Serloss-Remake**.
 
 
 ## 🌐 语言与翻译支持
@@ -37,7 +43,7 @@
 ### 构建步骤
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss.git
 # 使用 Android Studio 打开项目并进行构建
 ```
 

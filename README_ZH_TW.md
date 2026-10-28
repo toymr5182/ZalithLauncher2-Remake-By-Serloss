@@ -1,17 +1,13 @@
-# Zalith Launcher 2
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
+# Serloss Launcher
+[![Build CI](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml/badge.svg)](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml)
 
 [English](README_EN_US.md) | [简体中文](README.md)
 
+**Serloss Launcher** 是 [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) 的非官方效能最佳化分支，面向 **Android**。保留 **Jetpack Compose** / **Material Design 3** UI 與 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 啟動核心，並調整渲染路徑以獲得更順暢的遊戲體驗。
 
 > [!IMPORTANT]
-> 該專案與 [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher) 屬於兩個完全不同的專案  
-
-**Zalith Launcher 2** 是一個全新設計、面向 **Android 裝置** 的 [Minecraft: Java Edition](https://www.minecraft.net/) 啟動器。專案使用 [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) 作為啟動核心，採用 **Jetpack Compose** 與 **Material Design 3** 構建現代化 UI 體驗。  
-我們目前正在搭建自己的官方網站 [zalithlauncher.cn](https://zalithlauncher.cn)  
-此外，我們已注意到有第三方使用「Zalith Launcher」名稱搭建了一個看似官方的網站。請注意：**該網站並非我們創建**，其透過冒用名義並植入廣告牟利。我們對此類行為**不參與、不認可、不信任**。  
-請務必提高警覺，**謹防個人隱私資訊洩露**！
+> 這是**非官方修改版**，與上游 Zalith Launcher 2 專案無隸屬或背書關係。上游著作權與署名均已保留。  
+> 上游專案：[ZalithLauncher/ZalithLauncher2](https://github.com/ZalithLauncher/ZalithLauncher2)。本分支由 **Serloss-Remake** 維護。
 
 
 
@@ -39,7 +35,7 @@
 ### 構建步驟
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss.git
 # 使用 Android Studio 開啟專案並進行構建
 ```
 

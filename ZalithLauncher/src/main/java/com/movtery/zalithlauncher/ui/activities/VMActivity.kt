@@ -23,7 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.graphics.SurfaceTexture
+import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
@@ -32,8 +32,8 @@ import android.view.Display
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.Surface
-import android.view.TextureView
-import android.view.TextureView.SurfaceTextureListener
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.ViewGroup
 import android.view.WindowInsets as AndroidWindowInsets
 import android.view.WindowManager
@@ -340,7 +340,7 @@ class VMViewModel : ViewModel() {
     }
 }
 
-class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
+class VMActivity : BaseAppCompatActivity(), SurfaceHolder.Callback {
     override fun isIgnoreNotch(): Boolean = AllSettings.gameFullScreen.getValue()
 
     private val errorViewModel: ErrorViewModel by viewModels()
@@ -354,7 +354,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
     private val vmViewModel: VMViewModel by viewModels()
 
     /** View used to locate the layout hosting SDL's text input bridge. */
-    private var gameTextureView: TextureView? = null
+    private var gameSurfaceView: SurfaceView? = null
+
+    /** Last fixed surface buffer size; avoids redundant SurfaceView relayouts. */
+    private var lastFixedSurfaceSize: IntSize? = null
 
     private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
         return vmViewModel.session.handler.block()
@@ -632,7 +635,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         }
         lastWindowSize = newSize
 
-        gameTextureView?.surfaceTexture?.setDefaultBufferSize(newSize.width, newSize.height)
+        if (lastFixedSurfaceSize != newSize) {
+            gameSurfaceView?.holder?.setFixedSize(newSize.width, newSize.height)
+            lastFixedSurfaceSize = newSize
+        }
         ZLBridgeStates.onWindowChange()
         CallbackBridge.sendUpdateWindowSize(newSize.width, newSize.height)
         if (SdlBridge.sdlEnabled) {
@@ -815,21 +821,24 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         }
     }
 
-    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        val nativeSurface = Surface(surface)
+    override fun onSurfaceCreated(holder: SurfaceHolder) {
+        val nativeSurface = holder.surface
+        lastFixedSurfaceSize = null
         gameSurface = nativeSurface
         applyMaxRefreshRatePolicy()
-        SdlBridge.prepareSurface(this, nativeSurface, gameTextureView?.parent as? ViewGroup, surface)
+        SdlBridge.prepareSurface(this, nativeSurface, gameSurfaceView?.parent as? ViewGroup, holder)
         //游戏请求 GLFW direct gamepad 时的通知接收方
         CallbackBridge.setDirectGamepadEnableHandler {
             LoggerBridge.append("ZalithLauncher: Direct gamepad handler enabled")
         }
         if (vmViewModel.isRunning) {
             ZLBridge.setupBridgeWindow(nativeSurface)
-            // surface 重建后新 SurfaceTexture 的渲染 buffer 回落视图尺寸，须重新恢复渲染状态；
+            // surface 重建后新 SurfaceView 的渲染 buffer 回落视图尺寸，须重新恢复渲染状态；
             // 复用分支若不重置销毁标记，后续尺寸回调会被持续阻塞，错位状态将无法自愈
             withHandler { mIsSurfaceDestroyed = false }
-            requestRefreshWindowSize(screenSize = referenceScreenSize(fallback = IntSize(width, height)))
+            val frame = android.graphics.Rect()
+            holder.getSurfaceFrame(frame)
+            requestRefreshWindowSize(screenSize = referenceScreenSize(fallback = IntSize(frame.width(), frame.height())))
             return
         }
         vmViewModel.isRunning = true
@@ -840,7 +849,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
             val currentSize = refreshWindowSize(screenSize = screenSize)
             withHandler {
                 execute(
-                    surface = Surface(surface),
+                    surface = nativeSurface,
                     screenSize = currentSize,
                     scope = lifecycleScope
                 )
@@ -848,25 +857,22 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         }
     }
 
-    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+    override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         if (withHandler { mIsSurfaceDestroyed }) return
         requestRefreshWindowSize(screenSize = referenceScreenSize(fallback = IntSize(width, height)))
     }
 
-    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+    override fun onSurfaceDestroyed(holder: SurfaceHolder) {
+        lastFixedSurfaceSize = null
         gameSurface = null
         val nativeSurface = SDLSurface.getNativeSurface()
-        if (SdlBridge.beginSurfaceDestroy(surface, nativeSurface)) {
+        if (SdlBridge.beginSurfaceDestroy(holder, nativeSurface)) {
             if (SdlBridge.sdlEnabled) {
                 SDLActivity.getSDLSurface()?.surfaceDestroyed()
             }
             SdlBridge.unregisterSurface(nativeSurface)
         }
         withHandler { mIsSurfaceDestroyed = true }
-        return true
-    }
-
-    override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
     }
 
     @Composable
@@ -919,10 +925,9 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
                         IntOffset(0, -bottomPadding)
                     },
                 factory = { context ->
-                    TextureView(context).apply {
-                        isOpaque = true
-                        alpha = 1.0f
-                        surfaceTextureListener = this@VMActivity
+                    SurfaceView(context).apply {
+                        holder.addCallback(this@VMActivity)
+                        holder.setFormat(PixelFormat.OPAQUE)
                         setOnApplyWindowInsetsListener { v, insets ->
                             if (SdlBridge.sdlEnabled && Build.VERSION.SDK_INT >= 30) {
                                 SDLActivity.notifyImeVisibilityChanged(
@@ -931,8 +936,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
                             }
                             v.onApplyWindowInsets(insets)
                         }
-                    }.also { texture ->
-                        gameTextureView = texture
+                    }.also { surfaceView ->
+                        gameSurfaceView = surfaceView
                     }
                 }
             )

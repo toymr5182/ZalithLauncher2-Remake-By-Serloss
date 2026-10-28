@@ -1,17 +1,23 @@
-# Zalith Launcher 2
-![Downloads](https://img.shields.io/github/downloads/ZalithLauncher/ZalithLauncher2/total)
-[![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://afdian.com/a/MovTery)
+# Serloss Launcher
+[![Build CI](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml/badge.svg)](https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss/actions/workflows/push_ci.yml)
 
 [简体中文](README.md) | [繁體中文](README_ZH_TW.md)
 
+**Serloss Launcher** is an unofficial, performance-focused fork of [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2) for **Android**. It keeps the modern **Jetpack Compose** / **Material Design 3** UI and the [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) launch core, while tuning the rendering path for smoother gameplay.
+
+## Performance and optimization
+
+- Direct `SurfaceView` output for the game surface, removing the extra `TextureView` GPU copy and composition pass.
+- Tuned renderer defaults for MobileGlues, Zink, and Mesa shader caches.
+- Lower memory pressure through adjusted JVM heap and GC defaults.
+- Performance-oriented Sodium and Minecraft graphics defaults, with user overrides preserved.
+- Open source under **GPL-3.0**. Source code, licenses, and build scripts are public.
 
 > [!IMPORTANT]
-> This project is **completely separate** from [ZalithLauncher](https://github.com/ZalithLauncher/ZalithLauncher).  
+> This is an **unofficial modified build**. It is not affiliated with or endorsed by the upstream Zalith Launcher 2 project. Upstream copyright and attribution are preserved.
 
-**Zalith Launcher 2** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). The project uses [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/tree/v3_openjdk/app_pojavlauncher/src/main/jni) as its core launching engine and features a modern UI built with **Jetpack Compose** and **Material Design 3**.  
-We are currently building our official website [zalithlauncher.cn](https://zalithlauncher.cn)  
-Additionally, we are aware that a third-party website has been set up using the name “Zalith Launcher”, appearing to be official. Please note: **this site was not created by us**. It exploits the name to display ads for profit. We **do not participate in, endorse, or trust** such content.  
-Please stay vigilant and **protect your personal privacy**!
+> [!NOTE]
+> Upstream project: [ZalithLauncher/ZalithLauncher2](https://github.com/ZalithLauncher/ZalithLauncher2). This fork is maintained by **Serloss-Remake**.
 
 ## 🌐 Language and Translation Support
 
@@ -33,7 +39,7 @@ Thank you to every language contributor for helping make Zalith Launcher 2 more 
 ### Build Steps
 
 ```bash
-git clone git@github.com:ZalithLauncher/ZalithLauncher2.git
+git clone https://github.com/toymr5182/ZalithLauncher2-Remake-By-Serloss.git
 # Open the project in Android Studio and build
 ```
 

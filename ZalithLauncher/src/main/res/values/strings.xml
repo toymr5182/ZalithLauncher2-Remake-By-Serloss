@@ -2491,14 +2491,32 @@
     <string name="control_editor_exit_message">Are you sure you want to exit directly? This will cause any changes to be unsaved. If you need to save, please check the editor menu.</string>
     <!-- Button in the unsaved-changes dialog to exit anyway; also a menu item to exit the editor directly -->
     <string name="control_editor_exit_confirm">Exit Directly</string>
+    <!-- Short description used by Android and the About page -->
+    <string name="app_description">A performance-focused Minecraft: Java Edition launcher for Android, tuned for smoother gameplay, lower memory pressure, and faster graphics.</string>
+    <!-- GPLv3 7(c) notice for modified builds; %s is the launcher name -->
+    <string name="app_unofficial_notice">%s • Unofficial modified build</string>
     <!-- Section title on the About page describing the launcher itself -->
     <string name="about_launcher_title">About Launcher</string>
     <!-- Line under the launcher name on the About page; %s is the version number -->
     <string name="about_launcher_version">Launcher Version: %s</string>
-    <!-- Name of the launcher author shown as an item title on the About page -->
+    <!-- Performance/optimization description on the About page -->
+    <string name="about_launcher_description">Performance-focused build with tuned rendering, memory, and graphics defaults for smoother Minecraft gameplay on Android.</string>
+    <!-- Name of the launcher developer shown as an item title on the About page -->
+    <string name="about_launcher_developer_title">Serloss-Remake</string>
+    <!-- Description under the developer name on the About page; %s is the launcher name -->
+    <string name="about_launcher_developer_text">Developer of %s</string>
+    <!-- Name of the original launcher author shown as an item title on the About page -->
     <string name="about_launcher_author_movtery_title">MovTery</string>
-    <!-- Description under the author name on the About page; %s is the launcher name -->
+    <!-- Description under the original author name on the About page; %s is the launcher name -->
     <string name="about_launcher_author_movtery_text">Author of %s</string>
+    <!-- Open-source signature shown on the About page -->
+    <string name="about_open_source_title">Open Source</string>
+    <!-- Open-source signature text; %s is the launcher name -->
+    <string name="about_open_source_text">%s is free software under GPLv3. Source code, licenses, and build scripts are public.</string>
+    <!-- Button opening the source code repository -->
+    <string name="about_source_code">Source Code</string>
+    <!-- Upstream attribution on the About page; %s is the launcher name -->
+    <string name="about_acknowledgements_zalith_text">%s is based on Zalith Launcher 2 by MovTery and contributors</string>
     <!-- Button on the About page opening the project website -->
     <string name="about_launcher_project_link">Project Link</string>
     <!-- Button on the About page opening the sponsorship page; also the title of the sponsorship dialog -->
