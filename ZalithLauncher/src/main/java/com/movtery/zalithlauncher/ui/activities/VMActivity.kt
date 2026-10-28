@@ -821,7 +821,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceHolder.Callback {
         }
     }
 
-    override fun onSurfaceCreated(holder: SurfaceHolder) {
+    override fun surfaceCreated(holder: SurfaceHolder) {
         val nativeSurface = holder.surface
         lastFixedSurfaceSize = null
         gameSurface = nativeSurface
@@ -836,8 +836,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceHolder.Callback {
             // surface 重建后新 SurfaceView 的渲染 buffer 回落视图尺寸，须重新恢复渲染状态；
             // 复用分支若不重置销毁标记，后续尺寸回调会被持续阻塞，错位状态将无法自愈
             withHandler { mIsSurfaceDestroyed = false }
-            val frame = android.graphics.Rect()
-            holder.getSurfaceFrame(frame)
+            val frame = holder.surfaceFrame
             requestRefreshWindowSize(screenSize = referenceScreenSize(fallback = IntSize(frame.width(), frame.height())))
             return
         }
@@ -857,12 +856,12 @@ class VMActivity : BaseAppCompatActivity(), SurfaceHolder.Callback {
         }
     }
 
-    override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         if (withHandler { mIsSurfaceDestroyed }) return
         requestRefreshWindowSize(screenSize = referenceScreenSize(fallback = IntSize(width, height)))
     }
 
-    override fun onSurfaceDestroyed(holder: SurfaceHolder) {
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
         lastFixedSurfaceSize = null
         gameSurface = null
         val nativeSurface = SDLSurface.getNativeSurface()
