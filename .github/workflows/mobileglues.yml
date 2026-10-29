@@ -126,7 +126,8 @@ jobs:
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           echo "ndk.dir=$ANDROID_HOME/ndk/27.3.13750724" >> local.properties
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace --max-workers=2 \
+            -Dorg.gradle.jvmargs=-Xmx1536m
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
