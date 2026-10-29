@@ -52,6 +52,8 @@ namespace FSR1_Context {
     extern bool g_resolutionChanged;
     extern GLsizei g_pendingWidth;
     extern GLsizei g_pendingHeight;
+    extern GLsizei g_appWidth;
+    extern GLsizei g_appHeight;
 } // namespace FSR1_Context
 
 extern bool fsrInitialized;

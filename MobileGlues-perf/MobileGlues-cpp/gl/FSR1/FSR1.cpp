@@ -154,6 +154,15 @@ namespace FSR1_Context {
     bool g_resolutionChanged = false;
     GLsizei g_pendingWidth = 0;
     GLsizei g_pendingHeight = 0;
+
+    // The largest viewport the application asked for while drawing to framebuffer
+    // 0, in its own coordinates. eglQuerySurface is the only other source of the
+    // output size and on some hosts it reports a surface smaller than the
+    // framebuffer the driver actually presents -- writing the upscale at that
+    // smaller size leaves the rest of the window untouched. The application's
+    // viewport is what it expects to fill, so it wins when it is larger.
+    GLsizei g_appWidth = 0;
+    GLsizei g_appHeight = 0;
 } // namespace FSR1_Context
 
 void CalculateTargetResolution(FSR1_Quality_Preset preset, int renderWidth, int renderHeight, int* targetWidth,
@@ -489,6 +498,8 @@ void CheckResolutionChange(EGLDisplay display, EGLSurface surface) {
     // reach the driver's command stream.
     egl_eglQuerySurface(display, surface, EGL_WIDTH, &width);
     egl_eglQuerySurface(display, surface, EGL_HEIGHT, &height);
+    if (width < FSR1_Context::g_appWidth) width = FSR1_Context::g_appWidth;
+    if (height < FSR1_Context::g_appHeight) height = FSR1_Context::g_appHeight;
     OnResize(width, height);
 
     if (FSR1_Context::g_resolutionChanged) {
@@ -506,6 +517,13 @@ void CheckResolutionChange(EGLDisplay display, EGLSurface surface) {
                                   reinterpret_cast<int*>(&FSR1_Context::g_renderWidth),
                                   reinterpret_cast<int*>(&FSR1_Context::g_renderHeight));
         RecreateFSRFBO();
+        LOG_W_FORCE("FSR1: surface %dx%d, app viewport %dx%d -> target %dx%d, render %dx%d", width, height,
+                    FSR1_Context::g_appWidth, FSR1_Context::g_appHeight, FSR1_Context::g_targetWidth,
+                    FSR1_Context::g_targetHeight, FSR1_Context::g_renderWidth, FSR1_Context::g_renderHeight)
+        // Start collecting the application's viewport again for the new size, so a
+        // window that shrank is not held at the old size by the maximum below.
+        FSR1_Context::g_appWidth = 0;
+        FSR1_Context::g_appHeight = 0;
     }
     // No glViewport here. This runs immediately after ApplyFSR and the swap, and
     // ApplyFSR ends every frame with exactly this call at exactly this size; on the
@@ -548,6 +566,14 @@ GLint scale_app_offset(GLint value, GLsizei render, GLsizei target) {
 void glViewport(GLint x, GLint y, GLsizei w, GLsizei h) {
     LOG()
     LOG_D("glViewport: x=%d, y=%d, w=%d, h=%d", x, y, w, h);
+
+    // Draws into framebuffer 0 land in the internal render target, which is
+    // smaller. Remember how much of the window the application asked for; the
+    // upscale output size follows it when EGL under-reports the surface.
+    if (gl_state->current_draw_fbo == FSR1_Context::g_renderFBO) {
+        if (w > FSR1_Context::g_appWidth) FSR1_Context::g_appWidth = w;
+        if (h > FSR1_Context::g_appHeight) FSR1_Context::g_appHeight = h;
+    }
 
     // The latch that notices a surface change before EGL does works in the
     // application's coordinates, so it runs before the scaling below.
@@ -601,6 +627,7 @@ struct fsr1_ctx_state_t {
     GLint inputTexLoc = -1, const0Loc = -1, viewportSizeLoc = -1;
     GLuint currentDrawFBO = 0;
     GLsizei targetWidth = 0, targetHeight = 0, renderWidth = 0, renderHeight = 0;
+    GLsizei appWidth = 0, appHeight = 0;
     bool initialised = false;
 };
 
@@ -628,6 +655,8 @@ void store_into(fsr1_ctx_state_t& d) {
     d.targetHeight = FSR1_Context::g_targetHeight;
     d.renderWidth = FSR1_Context::g_renderWidth;
     d.renderHeight = FSR1_Context::g_renderHeight;
+    d.appWidth = FSR1_Context::g_appWidth;
+    d.appHeight = FSR1_Context::g_appHeight;
     d.initialised = fsrInitialized;
 }
 
@@ -646,6 +675,8 @@ void load_from(const fsr1_ctx_state_t& s) {
     FSR1_Context::g_targetHeight = s.targetHeight;
     FSR1_Context::g_renderWidth = s.renderWidth;
     FSR1_Context::g_renderHeight = s.renderHeight;
+    FSR1_Context::g_appWidth = s.appWidth;
+    FSR1_Context::g_appHeight = s.appHeight;
     fsrInitialized = s.initialised;
     // Left alone deliberately: g_dirty, g_resolutionChanged and the pending size
     // describe work queued for the frame in flight, not the context's objects.
