@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - '**'
-    branches-ignore:
-      - mobileglues-perf
+      - '!mobileglues-perf'
   workflow_dispatch:
 
 jobs:
