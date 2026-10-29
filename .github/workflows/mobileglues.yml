@@ -80,3 +80,53 @@ jobs:
           path: MobileGlues-perf/MobileGlues-cpp/build/libmobileglues.so
           if-no-files-found: error
 
+  plugin-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK and NDK packages
+        run: |
+          yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.3.13750724" > /dev/null
+
+      - name: Fetch third-party sources
+        working-directory: MobileGlues-perf/MobileGlues-cpp
+        run: |
+          set -eux
+          clone_at() {
+            url="$1"; sha="$2"; dir="$3"
+            mkdir -p "$(dirname "$dir")"
+            git init -q "$dir"
+            git -C "$dir" remote add origin "$url"
+            git -C "$dir" fetch -q --depth 1 origin "$sha"
+            git -C "$dir" checkout -q FETCH_HEAD
+          }
+          clone_at https://github.com/KhronosGroup/glslang.git 64086a26309dcde0625a3fd685a455949dbbb08d 3rdparty/glslang
+          clone_at https://github.com/KhronosGroup/SPIRV-Cross.git a0fba56c34a6700f1724bf9b751da5b488a3775c 3rdparty/SPIRV-Cross
+          clone_at https://github.com/stbrumme/xxhash.git c2866db364b6ea3a11933e62235ddc166ba18565 3rdparty/xxhash
+          clone_at https://github.com/MobileGL-Dev/flat_hash_map.git 21c1cec95abee1beef827e4a7c95f692875d9594 include/ska
+
+      - name: Build plugin APK
+        working-directory: MobileGlues-plugin
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "ndk.dir=$ANDROID_HOME/ndk/27.3.13750724" >> local.properties
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobileglues-plugin-debug-apk
+          path: MobileGlues-plugin/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
