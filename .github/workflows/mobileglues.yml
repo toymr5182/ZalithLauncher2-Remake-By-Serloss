@@ -48,7 +48,7 @@ jobs:
             git -C "$dir" fetch -q --depth 1 origin "$sha"
             git -C "$dir" checkout -q FETCH_HEAD
           }
-          clone_at https://github.com/KhronosGroup/glslang.git f5f664de8146676b04a332a7233959fc3ce9681 3rdparty/glslang
+          clone_at https://github.com/KhronosGroup/glslang.git 64086a26309dcde0625a3fd685a455949dbbb08d 3rdparty/glslang
           clone_at https://github.com/KhronosGroup/SPIRV-Cross.git a0fba56c34a6700f1724bf9b751da5b488a3775c 3rdparty/SPIRV-Cross
           clone_at https://github.com/stbrumme/xxhash.git c2866db364b6ea3a11933e62235ddc166ba18565 3rdparty/xxhash
           clone_at https://github.com/MobileGL-Dev/flat_hash_map.git 21c1cec95abee1beef827e4a7c95f692875d9594 include/ska
