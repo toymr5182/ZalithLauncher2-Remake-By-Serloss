@@ -6,6 +6,7 @@ on:
       - mobileglues-perf
     paths:
       - "MobileGlues-perf/**"
+      - "MobileGlues-plugin/**"
       - ".github/workflows/mobileglues.yml"
   workflow_dispatch:
 
