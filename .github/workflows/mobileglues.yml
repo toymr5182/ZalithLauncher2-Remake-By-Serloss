@@ -1,0 +1,82 @@
+name: Build MobileGlues (perf branch)
+
+on:
+  push:
+    branches:
+      - mobileglues-perf
+    paths:
+      - "MobileGlues-perf/**"
+      - ".github/workflows/mobileglues.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86_64]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android NDK r27c
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27c
+
+      - name: Fetch third-party sources
+        working-directory: MobileGlues-perf/MobileGlues-cpp
+        run: |
+          set -eux
+          clone_at() {
+            url="$1"; sha="$2"; dir="$3"
+            mkdir -p "$(dirname "$dir")"
+            git init -q "$dir"
+            git -C "$dir" remote add origin "$url"
+            git -C "$dir" fetch -q --depth 1 origin "$sha"
+            git -C "$dir" checkout -q FETCH_HEAD
+          }
+          clone_at https://github.com/KhronosGroup/glslang.git f5f664de8146676b04a332a7233959fc3ce9681 3rdparty/glslang
+          clone_at https://github.com/KhronosGroup/SPIRV-Cross.git a0fba56c34a6700f1724bf9b751da5b488a3775c 3rdparty/SPIRV-Cross
+          clone_at https://github.com/stbrumme/xxhash.git c2866db364b6ea3a11933e62235ddc166ba18565 3rdparty/xxhash
+          clone_at https://github.com/MobileGL-Dev/flat_hash_map.git 21c1cec95abee1beef827e4a7c95f692875d9594 include/ska
+
+      - name: Configure
+        working-directory: MobileGlues-perf/MobileGlues-cpp
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=${{ matrix.abi }} \
+            -DANDROID_PLATFORM=android-21 \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        working-directory: MobileGlues-perf/MobileGlues-cpp
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Strip
+        working-directory: MobileGlues-perf/MobileGlues-cpp
+        run: |
+          "${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip" \
+            --strip-unneeded build/libmobileglues.so
+          ls -l build/libmobileglues.so
+
+      - name: Upload library
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobileglues-${{ matrix.abi }}
+          path: MobileGlues-perf/MobileGlues-cpp/build/libmobileglues.so
+          if-no-files-found: error
+
