@@ -182,7 +182,12 @@ void glBindFramebuffer(GLenum target, GLuint framebuffer) {
     // binding of 0 -- which gl/texture.cpp does around its blits -- landed on the
     // FSR1 target or not depending on which spelling the caller used.
     GLuint draw_fb = framebuffer;
-    if (framebuffer == 0 && target != GL_READ_FRAMEBUFFER) {
+    // The redirect exists only while FSR1 is on. A render target created by an
+    // earlier enabled session must not keep swallowing framebuffer 0 after the
+    // setting is turned off, or the application would render at the internal
+    // resolution with nothing left to upscale it.
+    if (framebuffer == 0 && target != GL_READ_FRAMEBUFFER &&
+        global_settings.fsr1_setting != FSR1_Quality_Preset::Disabled) {
         draw_fb = FSR1_Context::g_renderFBO;
         FSR1_Context::g_dirty = true;
     }

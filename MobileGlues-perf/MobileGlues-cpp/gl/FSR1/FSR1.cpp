@@ -142,8 +142,11 @@ namespace FSR1_Context {
 
     GLuint g_currentDrawFBO = 0;
     GLint g_viewport[4] = {0};
-    GLsizei g_targetWidth = 2400;
-    GLsizei g_targetHeight = 1080;
+    // Zero until the surface size is known: OnResize compares against it, so a
+    // non-zero guess could match the real surface and leave the render size at
+    // the startup default for the life of the process.
+    GLsizei g_targetWidth = 0;
+    GLsizei g_targetHeight = 0;
     GLsizei g_renderWidth = 1200;
     GLsizei g_renderHeight = 540;
     bool g_dirty = false;
@@ -398,7 +401,10 @@ void ApplyFSR() {
     // Before the first shader compiles there is no program and no render target;
     // framebuffer 0 is still the real surface in that window, so a frame presented
     // through here has nothing to upscale.
-    if (!fsrInitialized || FSR1_Context::g_fsrProgram == 0 || FSR1_Context::g_renderFBO == 0) return;
+    if (!fsrInitialized || FSR1_Context::g_fsrProgram == 0 || FSR1_Context::g_renderFBO == 0 ||
+        FSR1_Context::g_targetWidth <= 0 || FSR1_Context::g_targetHeight <= 0) {
+        return;
+    }
 
     // No GUARD_ARRAY_BUFFER or GUARD_RENDERBUFFER: nothing below binds either.
     // GL_ARRAY_BUFFER_BINDING is context state and not vertex array object state, so
@@ -416,6 +422,16 @@ void ApplyFSR() {
     // off for the quad and put back as it was.
     const GLboolean scissor_test = GLES.glIsEnabled(GL_SCISSOR_TEST);
     if (scissor_test) GLES.glDisable(GL_SCISSOR_TEST);
+
+    // The quad must not be tinted, depth-tested, occluded by the surface's depth
+    // buffer, or culled. Each of these echoes the application's state, which is
+    // put back after the draw.
+    const GLboolean blend = GLES.glIsEnabled(GL_BLEND);
+    if (blend) GLES.glDisable(GL_BLEND);
+    const GLboolean depth_test = GLES.glIsEnabled(GL_DEPTH_TEST);
+    if (depth_test) GLES.glDisable(GL_DEPTH_TEST);
+    const GLboolean cull_face = GLES.glIsEnabled(GL_CULL_FACE);
+    if (cull_face) GLES.glDisable(GL_CULL_FACE);
 
     GLES.glUseProgram(FSR1_Context::g_fsrProgram);
 
@@ -439,6 +455,9 @@ void ApplyFSR() {
     GLES.glBindVertexArray(FSR1_Context::g_quadVAO);
     GLES.glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    if (cull_face) GLES.glEnable(GL_CULL_FACE);
+    if (depth_test) GLES.glEnable(GL_DEPTH_TEST);
+    if (blend) GLES.glEnable(GL_BLEND);
     if (scissor_test) GLES.glEnable(GL_SCISSOR_TEST);
 
     // The viewport and nothing else. Neither framebuffer binding is worth setting
