@@ -244,4 +244,11 @@
     <string name="sponsor_confirm_msg">如果刚才已经捐赠了，点「已捐赠」，我们就不再提醒；没有的话也没关系哦~</string>
     <string name="sponsor_action_donated">已捐赠</string>
     <string name="sponsor_action_not_yet">还没有</string>
+    <string name="option_fsr1_quality">FSR1 画质</string>
+    <string name="fsr1_quality_disabled">关闭</string>
+    <string name="fsr1_quality_ultra">超高质量 (1.3x)</string>
+    <string name="fsr1_quality_quality">质量 (1.5x)</string>
+    <string name="fsr1_quality_balanced">均衡 (1.7x)</string>
+    <string name="fsr1_quality_performance">性能 (2.0x)</string>
+    <string name="warning_multidraw_compute_ext">当前排序包含 compute 后端，但「额外 compute shader 扩展」未启用，无法执行的调用会回退到下一个后端。</string>
 </resources>

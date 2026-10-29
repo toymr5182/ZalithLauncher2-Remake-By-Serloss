@@ -260,4 +260,11 @@ Please note, this action is <b><font color="@colorError">irreversible</font></b>
     <string name="sponsor_confirm_msg">If you happened to complete a donation just now, tap “Donated” and we will never bring this up again. If not, that is completely fine too.</string>
     <string name="sponsor_action_donated">I donated</string>
     <string name="sponsor_action_not_yet">Not yet</string>
+    <string name="option_fsr1_quality">FSR1 quality</string>
+    <string name="fsr1_quality_disabled">Disabled</string>
+    <string name="fsr1_quality_ultra">Ultra Quality (1.3x)</string>
+    <string name="fsr1_quality_quality">Quality (1.5x)</string>
+    <string name="fsr1_quality_balanced">Balanced (1.7x)</string>
+    <string name="fsr1_quality_performance">Performance (2.0x)</string>
+    <string name="warning_multidraw_compute_ext">The compute backend is in the selected order, but "Extra compute shader extension" is off. Calls it cannot serve fall back to the next backend.</string>
 </resources>

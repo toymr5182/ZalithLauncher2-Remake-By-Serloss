@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fcl.plugin.mobileglues.R
 import com.fcl.plugin.mobileglues.settings.MGConfig
 import com.fcl.plugin.mobileglues.settings.MultidrawBenchQuality
+import com.fcl.plugin.mobileglues.settings.MultidrawBackend
 import com.fcl.plugin.mobileglues.settings.MultidrawEntry
 import com.fcl.plugin.mobileglues.settings.MultidrawOrderItem
 import com.fcl.plugin.mobileglues.settings.MultidrawSettings
@@ -84,6 +85,15 @@ fun ColumnScope.MultidrawOrderContent(controller: AppController, config: MGConfi
     val settings = config.multidraw
 
     SectionHint(stringResource(R.string.md_order_hint))
+
+    // The compute backend needs the extension switch on; without it every call it
+    // is asked for falls back to the next rung in the order.
+    val computeSelected = MultidrawEntry.entries.any {
+        MultidrawBackend.Compute in settings.effectiveOrderFor(it)
+    }
+    if (computeSelected && !config.extComputeShader) {
+        SectionHint(stringResource(R.string.warning_multidraw_compute_ext))
+    }
 
     DragReorderColumn(
         items = settings.globalOrder,

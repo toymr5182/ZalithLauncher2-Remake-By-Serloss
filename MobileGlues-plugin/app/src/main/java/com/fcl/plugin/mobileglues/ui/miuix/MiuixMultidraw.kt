@@ -87,6 +87,15 @@ fun ColumnScope.MiuixMultidrawOrderContent(controller: AppController, config: MG
 
     MiuixSectionHint(stringResource(R.string.md_order_hint))
 
+    // The compute backend needs the extension switch on; without it every call it
+    // is asked for falls back to the next rung in the order.
+    val computeSelected = MultidrawEntry.entries.any {
+        MultidrawBackend.Compute in settings.effectiveOrderFor(it)
+    }
+    if (computeSelected && !config.extComputeShader) {
+        MiuixSectionHint(stringResource(R.string.warning_multidraw_compute_ext))
+    }
+
     DragReorderColumn(
         items = settings.globalOrder,
         onMove = controller::moveMultidrawGlobalItem,

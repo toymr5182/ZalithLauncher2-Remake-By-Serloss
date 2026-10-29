@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fcl.plugin.mobileglues.R
 import com.fcl.plugin.mobileglues.settings.AngleConfig
 import com.fcl.plugin.mobileglues.settings.DepthClearFixMode
+import com.fcl.plugin.mobileglues.settings.Fsr1Preset
 import com.fcl.plugin.mobileglues.settings.GlVersion
 import com.fcl.plugin.mobileglues.settings.GlslCacheScale
 import com.fcl.plugin.mobileglues.settings.MGConfig
@@ -165,10 +166,11 @@ private fun ConfigSections(controller: AppController, config: MGConfig) {
                 selected = config.depthClearFix,
                 onSelect = controller::selectDepthClearFix,
             )
-            MiuixSwitchRow(
-                title = stringResource(R.string.option_enable_fsr1),
-                checked = config.fsr1Enabled,
-                onCheckedChange = controller::setFsr1,
+            OptionRow(
+                title = stringResource(R.string.option_fsr1_quality),
+                options = Fsr1Preset.entries,
+                selected = config.fsr1,
+                onSelect = controller::selectFsr1,
             )
         }
 

@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fcl.plugin.mobileglues.R
 import com.fcl.plugin.mobileglues.settings.AngleConfig
 import com.fcl.plugin.mobileglues.settings.DepthClearFixMode
+import com.fcl.plugin.mobileglues.settings.Fsr1Preset
 import com.fcl.plugin.mobileglues.settings.GlVersion
 import com.fcl.plugin.mobileglues.settings.GlslCacheScale
 import com.fcl.plugin.mobileglues.settings.MGConfig
@@ -150,10 +151,10 @@ private fun ConfigSections(controller: AppController, config: MGConfig) {
                 summary = config.depthClearFix.label(context).toString(),
                 onClick = { choice = ChoiceTarget.DepthClear },
             )
-            SwitchPreferenceRow(
-                title = stringResource(R.string.option_enable_fsr1),
-                checked = config.fsr1Enabled,
-                onCheckedChange = controller::setFsr1,
+            TextPreferenceRow(
+                title = stringResource(R.string.option_fsr1_quality),
+                summary = config.fsr1.label(context).toString(),
+                onClick = { choice = ChoiceTarget.Fsr1 },
             )
         }
 
@@ -249,6 +250,14 @@ private fun ConfigSections(controller: AppController, config: MGConfig) {
             onDismiss = { choice = null },
         )
 
+        ChoiceTarget.Fsr1 -> OptionDialog(
+            title = stringResource(R.string.option_fsr1_quality),
+            options = Fsr1Preset.entries,
+            selected = config.fsr1,
+            onSelect = controller::selectFsr1,
+            onDismiss = { choice = null },
+        )
+
         null -> Unit
     }
 
@@ -305,4 +314,4 @@ private fun <T : SpinnerOption> OptionDialog(
     )
 }
 
-private enum class ChoiceTarget { Angle, NoError, DepthClear, GlVersion }
+private enum class ChoiceTarget { Angle, NoError, DepthClear, GlVersion, Fsr1 }

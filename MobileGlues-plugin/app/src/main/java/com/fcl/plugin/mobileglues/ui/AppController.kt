@@ -494,6 +494,24 @@ class AppController(
         }
     }
 
+    /**
+     * Picks the render scale directly. Every preset except Disabled is the same
+     * switch turned on, so choosing one from off shows the same warning first.
+     */
+    fun selectFsr1(preset: Fsr1Preset) {
+        val current = configStore.config.value ?: return
+        if (preset == current.fsr1) return
+        if (preset == Fsr1Preset.Disabled) {
+            update { it.copy(fsr1 = preset) }
+            return
+        }
+        if (!current.fsr1Enabled) {
+            confirmThenUpdate(R.string.warning_fsr1_enable) { it.copy(fsr1 = preset) }
+        } else {
+            update { it.copy(fsr1 = preset) }
+        }
+    }
+
     /** 滑块档位 → MiB → 配置。关掉缓存只是改配置，不动已有的缓存文件。 */
     fun setGlslCacheSliderPosition(position: Int, ceiling: Int) {
         update { it.copy(glslCache = GlslCacheSize.ofMebibytes(GlslCacheScale.mebibytesAt(position, ceiling))) }

@@ -302,12 +302,14 @@ enum class GlVersion(override val wire: Int, private val literal: String?) : Spi
  * native 端是 5 档画质预设，界面上目前只提供一个开关；把完整取值建模出来是为了让
  * 「配置里已经是 Balanced」这种情况能被正确识别并原样保留，而不是被开关改写成 1。
  */
-enum class Fsr1Preset(override val wire: Int) : WireValue {
-    Disabled(0),
-    UltraQuality(1),
-    Quality(2),
-    Balanced(3),
-    Performance(4),
+enum class Fsr1Preset(override val wire: Int, @param:StringRes private val labelRes: Int) : SpinnerOption {
+    Disabled(0, R.string.fsr1_quality_disabled),
+    UltraQuality(1, R.string.fsr1_quality_ultra),
+    Quality(2, R.string.fsr1_quality_quality),
+    Balanced(3, R.string.fsr1_quality_balanced),
+    Performance(4, R.string.fsr1_quality_performance);
+
+    override fun label(context: Context): CharSequence = context.getString(labelRes)
 }
 
 /** `maxGlslCacheSize`。把「关闭」这个用负数表达的状态显式建模出来。 */
