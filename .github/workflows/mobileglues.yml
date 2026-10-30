@@ -127,7 +127,12 @@ jobs:
           echo "ndk.dir=$ANDROID_HOME/ndk/27.3.13750724" >> local.properties
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace --max-workers=2 \
-            -Dorg.gradle.jvmargs=-Xmx1536m
+            -Dorg.gradle.jvmargs=-Xmx1536m > /tmp/gradle.log 2>&1 || {
+            grep -m5 -E "^e: |error:|What went wrong|Caused by|Execution failed" /tmp/gradle.log | while IFS= read -r line; do
+              echo "::error title=Gradle::$line"
+            done
+            exit 1
+          }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
