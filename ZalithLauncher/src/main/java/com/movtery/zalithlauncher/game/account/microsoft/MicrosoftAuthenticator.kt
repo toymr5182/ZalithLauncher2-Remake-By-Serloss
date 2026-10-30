@@ -79,6 +79,23 @@ private const val TAG = "MicrosoftAuth"
 
 private val SCOPES = listOf("XboxLive.signin", "offline_access", "openid", "profile", "email")
 private const val TENANT = "/consumers"
+private const val LIVE_SCOPE = "service::user.auth.xboxlive.com::MBI_SSL"
+
+/**
+ * Azure 应用注册的 client id 是带连字符的 GUID，走 login.microsoftonline.com 的 v2 流程；
+ * 官方 Minecraft 客户端 id（00000000402b5328）只能走 login.live.com 的设备码流程。
+ */
+private val isAzureClientId: Boolean
+    get() = BuildKeys.OAUTH_CLIENT_ID.contains('-')
+
+private val deviceCodeUrl: String
+    get() = if (isAzureClientId) "$MICROSOFT_AUTH_URL$TENANT/oauth2/v2.0/devicecode" else "$LIVE_AUTH_URL/oauth20_connect.srf"
+
+private val tokenUrl: String
+    get() = if (isAzureClientId) "$MICROSOFT_AUTH_URL$TENANT/oauth2/v2.0/token" else "$LIVE_AUTH_URL/oauth20_token.srf"
+
+private val authScope: String
+    get() = if (isAzureClientId) SCOPES.joinToString(" ") else LIVE_SCOPE
 
 /**
  * 轮询令牌时允许的最大连续网络失败次数
@@ -111,10 +128,10 @@ suspend fun fetchDeviceCodeResponse(context: CoroutineContext): DeviceCodeRespon
     }
     withRetry {
         submitForm(
-            url = "$MICROSOFT_AUTH_URL$TENANT/oauth2/v2.0/devicecode",
+            url = deviceCodeUrl,
             parameters = Parameters.build {
                 append("client_id", BuildKeys.OAUTH_CLIENT_ID)
-                append("scope", SCOPES.joinToString(" "))
+                append("scope", authScope)
             },
             context = context
         )
@@ -149,18 +166,17 @@ suspend fun getTokenResponse(
 
         try {
             val response: JsonObject = submitForm(
-                "$MICROSOFT_AUTH_URL$TENANT/oauth2/v2.0/token",
+                tokenUrl,
                 parameters = Parameters.build {
                     append("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
                     append("device_code", codeResponse.deviceCode)
                     append("client_id", BuildKeys.OAUTH_CLIENT_ID)
-                    append("tenant", TENANT)
                 },
                 context = context
             )
             consecutiveFailures = 0
 
-            if (response["token_type"]?.jsonPrimitive?.content == "Bearer") {
+            if (response["token_type"]?.jsonPrimitive?.content?.equals("bearer", ignoreCase = true) == true) {
                 Logger.debug(TAG, "Access token successfully retrieved")
                 return@coroutineScope TokenResponse(
                     accessToken = response["access_token"].text(),
@@ -281,7 +297,7 @@ private suspend fun refreshAccessToken(
     return withRetry {
         try {
             val response = submitForm<JsonObject>(
-                url = "$LIVE_AUTH_URL/oauth20_token.srf",
+                url = tokenUrl,
                 parameters = Parameters.build {
                     append("client_id", BuildKeys.OAUTH_CLIENT_ID)
                     append("refresh_token", refreshToken)
