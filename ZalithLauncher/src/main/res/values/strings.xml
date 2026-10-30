@@ -886,6 +886,8 @@
     <string name="account_logging_profile_not_exists">Please create a Minecraft player profile first, then try logging in again!</string>
     <!-- Error message in the login failed dialog when Minecraft ownership is not verified -->
     <string name="account_logging_not_purchased_minecraft">Minecraft ownership not verified. Please purchase it from Minecraft\'s official website.</string>
+    <!-- Error message when the build has no OAUTH_CLIENT_ID, so Microsoft sign-in cannot start -->
+    <string name="account_microsoft_oauth_not_configured">Microsoft sign-in is not configured: the OAUTH_CLIENT_ID build key is missing. Add it to the project secrets and build again.</string>
     <!-- Title of the dialog asking the user to sign in to the account again -->
     <string name="account_relogin_title">Sign In Required</string>
     <!-- Message in the Microsoft relogin dialog explaining why signing in again is needed -->

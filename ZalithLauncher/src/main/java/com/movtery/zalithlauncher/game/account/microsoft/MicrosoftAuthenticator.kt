@@ -93,10 +93,22 @@ const val XSTS_AUTH_URL = "https://xsts.auth.xboxlive.com"
 const val MINECRAFT_SERVICES_URL = "https://api.minecraftservices.com"
 
 /**
+ * 构建时没有注入 OAUTH_CLIENT_ID（例如 fork 仓库的 GitHub Secrets 未配置该值）。
+ * 此时请求微软身份验证端点必然被拒绝（HTTP 400，AADSTS900144），
+ * 提前拦截可以给用户一个明确的配置提示，而不是含糊的 “(400) 服务器无法理解请求”
+ */
+class OAuthClientNotConfiguredException :
+    IllegalStateException("OAUTH_CLIENT_ID is not configured")
+
+/**
  * 从 Microsoft 身份验证终端节点获取设备代码响应
  * 设备代码用于在单独的设备或浏览器上授权用户
  */
 suspend fun fetchDeviceCodeResponse(context: CoroutineContext): DeviceCodeResponse = coroutineScope {
+    if (BuildKeys.OAUTH_CLIENT_ID.isBlank()) {
+        Logger.error(TAG, "OAUTH_CLIENT_ID is blank, Microsoft login cannot start")
+        throw OAuthClientNotConfiguredException()
+    }
     withRetry {
         submitForm(
             url = "$MICROSOFT_AUTH_URL$TENANT/oauth2/v2.0/devicecode",

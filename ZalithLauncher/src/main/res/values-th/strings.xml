@@ -373,7 +373,8 @@
     <string name="game_menu_option_replacement_control">แทนที่ชุดปุ่มควบคุม</string>
     <string name="generic_edit">แก้ไข</string>
     <string name="generic_view">ดู</string>
-    <string name="error_bad_request">[%s เซิร์ฟเวอร์ไม่สามารถเข้าใจคําขอน้ได้</string>
+    <string name="error_bad_request">(%s) เซิร์ฟเวอร์ไม่สามารถเข้าใจคำขอได้</string>
+    <string name="account_microsoft_oauth_not_configured">การลงชื่อเข้าใช้ Microsoft ยังไม่ได้ตั้งค่า: ไม่มีคีย์ OAUTH_CLIENT_ID ตอน build ให้เพิ่มคีย์นี้ใน secrets ของโปรเจกต์แล้ว build ใหม่</string>
     <string name="error_forbidden">(%s) คุณไม่มีสิทธิในการเข้าถึงทรัพยากรนี้</string>
     <string name="error_not_acceptable">(%s) ไม่ยอมรับ</string>
 

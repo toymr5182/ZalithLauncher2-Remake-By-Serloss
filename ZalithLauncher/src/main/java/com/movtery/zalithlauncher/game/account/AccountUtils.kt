@@ -34,6 +34,7 @@ import com.movtery.zalithlauncher.game.account.microsoft.AsyncStatus
 import com.movtery.zalithlauncher.game.account.microsoft.AuthType
 import com.movtery.zalithlauncher.game.account.microsoft.MinecraftProfileException
 import com.movtery.zalithlauncher.game.account.microsoft.NotPurchasedMinecraftException
+import com.movtery.zalithlauncher.game.account.microsoft.OAuthClientNotConfiguredException
 import com.movtery.zalithlauncher.game.account.microsoft.XboxLoginException
 import com.movtery.zalithlauncher.game.account.microsoft.fetchDeviceCodeResponse
 import com.movtery.zalithlauncher.game.account.microsoft.getTokenResponse
@@ -46,6 +47,7 @@ import com.movtery.zalithlauncher.ui.androidText
 import com.movtery.zalithlauncher.ui.screens.content.elements.MicrosoftLoginOperation
 import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.logging.Logger
+import com.movtery.zalithlauncher.utils.network.serverErrorDetail
 import com.movtery.zalithlauncher.utils.network.toLocal
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -166,9 +168,10 @@ fun microsoftLogin(
                 is NotPurchasedMinecraftException -> toLocal()
                 is MinecraftProfileException -> th.toLocal()
                 is XboxLoginException -> th.toLocal()
+                is OAuthClientNotConfiguredException -> androidText(R.string.account_microsoft_oauth_not_configured)
                 is UnknownHostException, is UnresolvedAddressException -> androidText(R.string.error_network_unreachable)
                 is ConnectException -> androidText(R.string.error_connection_failed)
-                is KtorResponseException -> th.toLocal()
+                is KtorResponseException -> th.serverErrorDetailText()
                 is CancellationException -> { null }
                 else -> {
                     androidText(
@@ -190,6 +193,19 @@ fun microsoftLogin(
     )
 
     TaskSystem.submitTask(task)
+}
+
+/**
+ * 优先展示服务端响应体里给出的真实失败原因（例如微软接口的 AADSTS 错误码），
+ * 拿不到详情时才退回通用的 HTTP 状态码文案
+ */
+private suspend fun KtorResponseException.serverErrorDetailText(): AndroidStringText {
+    val detail = serverErrorDetail()
+    if (detail != null) {
+        Logger.error(TAG, "Server rejected the request: ${response.status} - $detail")
+        return androidText("(${response.status.value}) $detail")
+    }
+    return toLocal()
 }
 
 private suspend fun microsoftAuth(
