@@ -132,6 +132,8 @@ suspend fun fetchDeviceCodeResponse(context: CoroutineContext): DeviceCodeRespon
             parameters = Parameters.build {
                 append("client_id", BuildKeys.OAUTH_CLIENT_ID)
                 append("scope", authScope)
+                // login.live.com 需要显式声明设备码流程，v2 端点不接受该参数
+                if (!isAzureClientId) append("response_type", "device_code")
             },
             context = context
         )
