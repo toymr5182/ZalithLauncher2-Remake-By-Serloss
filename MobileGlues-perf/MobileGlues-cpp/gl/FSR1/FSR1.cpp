@@ -498,28 +498,36 @@ void CheckResolutionChange(EGLDisplay display, EGLSurface surface) {
     // reach the driver's command stream.
     egl_eglQuerySurface(display, surface, EGL_WIDTH, &width);
     egl_eglQuerySurface(display, surface, EGL_HEIGHT, &height);
-    if (width < FSR1_Context::g_appWidth) width = FSR1_Context::g_appWidth;
-    if (height < FSR1_Context::g_appHeight) height = FSR1_Context::g_appHeight;
     OnResize(width, height);
 
     if (FSR1_Context::g_resolutionChanged) {
         FSR1_Context::g_resolutionChanged = false;
-        // The surface size is the output size. The application renders smaller and
-        // the upscale fills the surface, which is the direction FSR is built for;
-        // rendering at surface size and upscaling past it was supersampling and
-        // cost proportionally more per pixel.
-        GLsizei width = FSR1_Context::g_pendingWidth;
-        GLsizei height = FSR1_Context::g_pendingHeight;
+        // Two sizes matter and they are not always equal. The application draws
+        // in its own window coordinates and expects that window to fill the
+        // display; the host may hand it a surface of a different size (launchers
+        // scale the window on the system compositor). So the internal render
+        // target is derived from the application's window, while the upscale
+        // output covers the larger of the window and the surface -- otherwise the
+        // upscaled image lands in a corner of a bigger surface.
+        const GLsizei surfaceWidth = FSR1_Context::g_pendingWidth;
+        const GLsizei surfaceHeight = FSR1_Context::g_pendingHeight;
+        const GLsizei appWidth = FSR1_Context::g_appWidth > 0 ? FSR1_Context::g_appWidth : surfaceWidth;
+        const GLsizei appHeight = FSR1_Context::g_appHeight > 0 ? FSR1_Context::g_appHeight : surfaceHeight;
+        // The output is the surface whenever EGL reports one: that is the
+        // framebuffer the upscale writes into. The application window only
+        // determines how much internal resolution its content gets.
+        const GLsizei width = surfaceWidth > 0 ? surfaceWidth : appWidth;
+        const GLsizei height = surfaceHeight > 0 ? surfaceHeight : appHeight;
         FSR1_Context::g_targetWidth = width;
         FSR1_Context::g_targetHeight = height;
 
-        CalculateRenderResolution(global_settings.fsr1_setting, width, height,
+        CalculateRenderResolution(global_settings.fsr1_setting, appWidth, appHeight,
                                   reinterpret_cast<int*>(&FSR1_Context::g_renderWidth),
                                   reinterpret_cast<int*>(&FSR1_Context::g_renderHeight));
         RecreateFSRFBO();
-        LOG_W_FORCE("FSR1: surface %dx%d, app viewport %dx%d -> target %dx%d, render %dx%d", width, height,
-                    FSR1_Context::g_appWidth, FSR1_Context::g_appHeight, FSR1_Context::g_targetWidth,
-                    FSR1_Context::g_targetHeight, FSR1_Context::g_renderWidth, FSR1_Context::g_renderHeight)
+        LOG_W_FORCE("FSR1: surface %dx%d, app viewport %dx%d -> target %dx%d, render %dx%d", surfaceWidth,
+                    surfaceHeight, appWidth, appHeight, FSR1_Context::g_targetWidth, FSR1_Context::g_targetHeight,
+                    FSR1_Context::g_renderWidth, FSR1_Context::g_renderHeight)
         // Start collecting the application's viewport again for the new size, so a
         // window that shrank is not held at the old size by the maximum below.
         FSR1_Context::g_appWidth = 0;
@@ -540,10 +548,12 @@ void OnResize(int width, int height) {
     FSR1_Context::g_resolutionChanged = true;
 }
 
-// The application works in surface coordinates. Everything it draws into
-// framebuffer 0 lands in the render target, which is smaller, so the viewport and
-// scissor rectangle have to be carried over by the same ratio. Draws into the
-// application's own framebuffers keep their own coordinates and are left alone.
+// The application draws in its window coordinates and everything it draws into
+// framebuffer 0 lands in the render target, which is that window divided by the
+// FSR scale. The viewport and scissor rectangle therefore map from the window,
+// not from the surface: a host that scales the window to a bigger surface would
+// otherwise squeeze the image into a corner of it. Draws into the application's
+// own framebuffers keep their own coordinates and are left alone.
 namespace {
 bool fsr_scales_app_coords() {
     return FSR1_Context::g_renderFBO != 0 && global_settings.fsr1_setting != FSR1_Quality_Preset::Disabled &&
@@ -551,15 +561,25 @@ bool fsr_scales_app_coords() {
            gl_state->current_draw_fbo == FSR1_Context::g_renderFBO;
 }
 
-GLsizei scale_app_extent(GLsizei value, GLsizei render, GLsizei target, GLsizei minimum) {
-    const long scaled = lround(double(value) * double(render) / double(target));
+double app_to_render_x() {
+    const GLsizei app = FSR1_Context::g_appWidth > 0 ? FSR1_Context::g_appWidth : FSR1_Context::g_targetWidth;
+    return double(FSR1_Context::g_renderWidth) / double(app);
+}
+
+double app_to_render_y() {
+    const GLsizei app = FSR1_Context::g_appHeight > 0 ? FSR1_Context::g_appHeight : FSR1_Context::g_targetHeight;
+    return double(FSR1_Context::g_renderHeight) / double(app);
+}
+
+GLsizei scale_extent(GLsizei value, double scale, GLsizei render, GLsizei minimum) {
+    const long scaled = lround(double(value) * scale);
     if (scaled < minimum) return minimum;
     if (scaled > render) return render;
     return static_cast<GLsizei>(scaled);
 }
 
-GLint scale_app_offset(GLint value, GLsizei render, GLsizei target) {
-    return static_cast<GLint>(lround(double(value) * double(render) / double(target)));
+GLint scale_offset(GLint value, double scale) {
+    return static_cast<GLint>(lround(double(value) * scale));
 }
 } // namespace
 
@@ -575,22 +595,13 @@ void glViewport(GLint x, GLint y, GLsizei w, GLsizei h) {
         if (h > FSR1_Context::g_appHeight) FSR1_Context::g_appHeight = h;
     }
 
-    // The latch that notices a surface change before EGL does works in the
-    // application's coordinates, so it runs before the scaling below.
-    if (w > FSR1_Context::g_pendingWidth || h > FSR1_Context::g_pendingHeight) {
-        FSR1_Context::g_pendingWidth = w;
-        FSR1_Context::g_pendingHeight = h;
-        FSR1_Context::g_resolutionChanged = true;
-    }
 
     if (fsr_scales_app_coords()) {
-        const GLsizei renderWidth = FSR1_Context::g_renderWidth;
-        const GLsizei renderHeight = FSR1_Context::g_renderHeight;
-        const GLsizei targetWidth = FSR1_Context::g_targetWidth;
-        const GLsizei targetHeight = FSR1_Context::g_targetHeight;
-        GLES.glViewport(scale_app_offset(x, renderWidth, targetWidth), scale_app_offset(y, renderHeight, targetHeight),
-                        scale_app_extent(w, renderWidth, targetWidth, 1),
-                        scale_app_extent(h, renderHeight, targetHeight, 1));
+        const double sx = app_to_render_x();
+        const double sy = app_to_render_y();
+        GLES.glViewport(scale_offset(x, sx), scale_offset(y, sy),
+                        scale_extent(w, sx, FSR1_Context::g_renderWidth, 1),
+                        scale_extent(h, sy, FSR1_Context::g_renderHeight, 1));
         return;
     }
 
@@ -602,13 +613,11 @@ void glScissor(GLint x, GLint y, GLsizei w, GLsizei h) {
     LOG_D("glScissor: x=%d, y=%d, w=%d, h=%d", x, y, w, h);
 
     if (fsr_scales_app_coords()) {
-        const GLsizei renderWidth = FSR1_Context::g_renderWidth;
-        const GLsizei renderHeight = FSR1_Context::g_renderHeight;
-        const GLsizei targetWidth = FSR1_Context::g_targetWidth;
-        const GLsizei targetHeight = FSR1_Context::g_targetHeight;
-        GLES.glScissor(scale_app_offset(x, renderWidth, targetWidth), scale_app_offset(y, renderHeight, targetHeight),
-                       scale_app_extent(w, renderWidth, targetWidth, 0),
-                       scale_app_extent(h, renderHeight, targetHeight, 0));
+        const double sx = app_to_render_x();
+        const double sy = app_to_render_y();
+        GLES.glScissor(scale_offset(x, sx), scale_offset(y, sy),
+                       scale_extent(w, sx, FSR1_Context::g_renderWidth, 0),
+                       scale_extent(h, sy, FSR1_Context::g_renderHeight, 0));
         return;
     }
 
