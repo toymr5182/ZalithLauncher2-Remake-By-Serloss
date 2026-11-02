@@ -351,12 +351,25 @@ abstract class Launcher(
 
         //Add automatically generated args
         val ramAllocationString = ramAllocation.toString()
-        args.add("-Xms${ramAllocationString}M")
+        //堆从较小值起步：资源包/区块的突发分配结束后，G1 才能把多余内存还给系统；
+        //若 -Xms 与 -Xmx 相同，加载时涨上去的堆会一直占满不释放
+        args.add("-Xms${minOf(ramAllocation, 1024)}M")
         args.add("-Xmx${ramAllocationString}M")
 
         //降低 G1 的停顿目标，减少区块加载/实体渲染时的长卡顿；Java 8 的 ParallelGC 会忽略该目标
         args.add("-XX:MaxGCPauseMillis=50")
         args.add("-XX:+ParallelRefProcEnabled")
+
+        if (this::runtime.isInitialized && runtime.javaVersion >= 11) {
+            //加大年轻代，减少资源包加载这种短时间大量分配触发的高频小 GC（内存占用来回跳）
+            args.add("-XX:+UseG1GC")
+            args.add("-XX:G1NewSizePercent=20")
+            args.add("-XX:G1MaxNewSizePercent=40")
+            args.add("-XX:G1HeapRegionSize=8M")
+            //允许空闲时把堆收缩到 -Xms，而不是永久保持峰值
+            args.add("-XX:MinHeapFreeRatio=10")
+            args.add("-XX:MaxHeapFreeRatio=40")
+        }
 
         args.add("-Dorg.lwjgl.openal.libname=${PathManager.DIR_NATIVE_LIB}/libopenal.so")
 
