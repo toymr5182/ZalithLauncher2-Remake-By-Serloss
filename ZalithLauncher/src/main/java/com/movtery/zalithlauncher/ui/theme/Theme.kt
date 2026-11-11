@@ -577,6 +577,18 @@ private val verdantDawnDark = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark.verdantDawn,
 )
 
+private val lavenderLight = dynamicColorScheme(
+    primary = Color(0xFF7C5CE0),
+    isDark = false,
+    style = PaletteStyle.Fidelity,
+)
+
+private val lavenderDark = dynamicColorScheme(
+    primary = Color(0xFF9D7FE8),
+    isDark = true,
+    style = PaletteStyle.Fidelity,
+)
+
 private fun customLight(
     color: Color,
     style: PaletteStyle,
@@ -626,6 +638,7 @@ fun ZalithLauncherTheme(
                 ColorThemeType.VELVET_ROSE -> velvetRoseDark
                 ColorThemeType.MISTWAVE -> mistwaveDark
                 ColorThemeType.GLACIER -> glacierDark
+                ColorThemeType.LAVENDER -> lavenderDark
                 ColorThemeType.VERDANTFIELD -> verdantFieldDark
                 ColorThemeType.URBAN_ASH -> urbanAshDark
                 ColorThemeType.VERDANT_DAWN -> verdantDawnDark
@@ -641,6 +654,7 @@ fun ZalithLauncherTheme(
                 ColorThemeType.VELVET_ROSE -> velvetRoseLight
                 ColorThemeType.MISTWAVE -> mistwaveLight
                 ColorThemeType.GLACIER -> glacierLight
+                ColorThemeType.LAVENDER -> lavenderLight
                 ColorThemeType.VERDANTFIELD -> verdantFieldLight
                 ColorThemeType.URBAN_ASH -> urbanAshLight
                 ColorThemeType.VERDANT_DAWN -> verdantDawnLight

@@ -135,6 +135,7 @@
     <!-- Option of the theme color setting in launcher settings -->
     <string name="theme_color_mistwave">Mistwave</string>
     <!-- Option of the theme color setting in launcher settings -->
+    <string name="theme_color_lavender">Lavender Glass</string>
     <string name="theme_color_glacier">Glacier</string>
     <!-- Option of the theme color setting in launcher settings -->
     <string name="theme_color_verdant_field">Verdant Twilight</string>

@@ -36,6 +36,7 @@ enum class ColorThemeType {
     VELVET_ROSE,
     MISTWAVE,
     GLACIER,
+    LAVENDER,
     VERDANTFIELD,
     URBAN_ASH,
     VERDANT_DAWN,
