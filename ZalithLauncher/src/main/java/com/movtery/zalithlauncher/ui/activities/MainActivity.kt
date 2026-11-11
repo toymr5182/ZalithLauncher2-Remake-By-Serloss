@@ -70,6 +70,7 @@ import com.movtery.zalithlauncher.ui.guide.rememberAppGuides
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.Background
+import com.movtery.zalithlauncher.ui.screens.content.elements.GlassAmbience
 import com.movtery.zalithlauncher.ui.screens.content.elements.LaunchGameOperation
 import com.movtery.zalithlauncher.ui.screens.content.elements.TitleTaskFlowDialog
 import com.movtery.zalithlauncher.ui.screens.content.navigateToLogView
@@ -347,6 +348,8 @@ class MainActivity : BaseAppCompatActivity() {
                         modifier = Modifier.fillMaxSize(),
                         viewModel = backgroundViewModel
                     )
+
+                    GlassAmbience()
 
                     MainScreen(
                         screenBackStackModel = screenBackStackModel,
